@@ -1,0 +1,5 @@
+# Has been moved to /usr/share/bash-completion/completions/pon
+rm_conffile /etc/bash_completion.d/pon 2.4.7-1+2~
+
+# Removed due to being non-functional
+rm_conffile /etc/init.d/pppd-dns 2.4.8-1+1~exp1~

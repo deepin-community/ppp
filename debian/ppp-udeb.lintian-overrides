@@ -1,0 +1,6 @@
+# HOSTNAME is set in the script
+ppp-udeb udeb: possible-bashism-in-maintainer-script postinst:184 '$HOSTNAME'
+ppp-udeb udeb: possible-bashism-in-maintainer-script postinst:221 '$HOSTNAME'
+ppp-udeb udeb: possible-bashism-in-maintainer-script postinst:222 '$HOSTNAME'
+ppp-udeb udeb: possible-bashism-in-maintainer-script postinst:225 '$HOSTNAME'
+ppp-udeb udeb: possible-bashism-in-maintainer-script postinst:227 '$HOSTNAME'

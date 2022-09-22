@@ -1,0 +1,61 @@
+Debian-specific changes.
+
+--- a/pppd/Makefile.linux
++++ b/pppd/Makefile.linux
+@@ -64,17 +64,17 @@
+ # Uncomment the next line to enable Type=notify services in systemd
+ # If enabled, and the user sets the up_sdnotify option, then
+ # pppd will not detach and will notify systemd when up.
+-#SYSTEMD=y
++SYSTEMD=y
+ 
+ HAS_SHADOW=y
+-#USE_PAM=y
++USE_PAM=y
+ HAVE_INET6=y
+ 
+ # Enable plugins
+ PLUGIN=y
+ 
+ # Enable Microsoft proprietary Callback Control Protocol
+-#CBCP=y
++CBCP=y
+ 
+ # Enable EAP SRP-SHA1 authentication (requires libsrp)
+ #USE_SRP=y
+--- a/pppd/pathnames.h
++++ b/pppd/pathnames.h
+@@ -33,7 +33,7 @@
+ #define _PATH_AUTHUP	 _ROOT_PATH "/etc/ppp/auth-up"
+ #define _PATH_AUTHDOWN	 _ROOT_PATH "/etc/ppp/auth-down"
+ #define _PATH_TTYOPT	 _ROOT_PATH "/etc/ppp/options."
+-#define _PATH_CONNERRS	 _ROOT_PATH "/etc/ppp/connect-errors"
++#define _PATH_CONNERRS	 _ROOT_PATH "/var/log/ppp-connect-errors"
+ #define _PATH_PEERFILES	 _ROOT_PATH "/etc/ppp/peers/"
+ #define _PATH_RESOLV	 _ROOT_PATH "/etc/ppp/resolv.conf"
+ 
+--- a/pppd/pppd.h
++++ b/pppd/pppd.h
+@@ -879,7 +879,7 @@
+   || defined(DEBUGCHAP) || defined(DEBUG) || defined(DEBUGIPV6CP)
+ #define LOG_PPP LOG_LOCAL2
+ #else
+-#define LOG_PPP LOG_DAEMON
++#define LOG_PPP LOG_LOCAL2
+ #endif
+ #endif /* LOG_PPP */
+ 
+--- a/pppdump/Makefile.linux
++++ b/pppdump/Makefile.linux
+@@ -6,9 +6,9 @@
+ BINDIR = $(DESTDIR)/sbin
+ MANDIR = $(DESTDIR)/share/man/man8
+ 
+-DO_DEFLATE=y
++#DO_DEFLATE=y
+ DO_BSD_COMPRESS=y
+-HAVE_ZLIB=n
++HAVE_ZLIB=y
+ 
+ CFLAGS = $(COPTS) -I../include/net
+ OBJS = pppdump.o

@@ -1,0 +1,30 @@
+Description: Add a SONAME to the pppd binary
+ This hack inserts a SONAME into the pppd binary, which allows us to
+ run dpkg-gensymbols/dh_makeshlibs over the resulting binary. This is
+ useful so that we can use Debian's standard build infrastructure to
+ help track the ppp binary's ABI, which is used by plugins.
+Author: Chris Boot <bootc@debian.org>
+Forwarded: not-needed
+Last-Update: 2015-12-05
+
+--- a/pppd/Makefile.linux
++++ b/pppd/Makefile.linux
+@@ -216,6 +216,8 @@
+ 
+ INSTALL= install
+ 
++VERSION = $(shell awk -F '"' '/VERSION/ { print $$2; }' patchlevel.h)
++
+ all: $(TARGETS)
+ 
+ install: pppd
+@@ -227,7 +229,8 @@
+ 	$(INSTALL) -c -m 444 pppd.8 $(MANDIR)
+ 
+ pppd: $(PPPDOBJS)
+-	$(CC) $(CFLAGS) $(LDFLAGS) $(LDFLAGS_PLUGIN) -o pppd $(PPPDOBJS) $(LIBS)
++	$(CC) $(CFLAGS) $(LDFLAGS) $(LDFLAGS_PLUGIN) -o pppd $(PPPDOBJS) $(LIBS) \
++		-Wl,-soname,pppd.so.$(VERSION)
+ 
+ srp-entry:	srp-entry.c
+ 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ srp-entry.c $(LIBS)
