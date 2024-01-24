@@ -1,3 +1,9 @@
+ppp (2.4.9-1+1deepin1) unstable; urgency=medium
+
+  * update symbols for loong64
+
+ -- Chang Yang <yangchang@deepin.org>  Wed, 24 Jan 2024 11:52:22 +0800
+
 ppp (2.4.9-1+1) unstable; urgency=medium
 
   [ Samuel Thibault ]
