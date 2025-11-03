@@ -17,6 +17,7 @@ fail() {
 }
 
 ppp_concentrator_on() {
+	local R P
 	db_subst ppp/detect_progress IFACE "${1}" || true
 	if [ -z "$(ip link show $1 up)" ]; then
 		log "$1 was not configured. ppp-udeb will bring it up"
@@ -26,51 +27,17 @@ ppp_concentrator_on() {
 		log "$1 was already up"
 		PPPUP=no
 	fi
-	MAXWAIT=20; IW=5; TOTWAIT=$(($MAXWAIT + $MAXWAIT + $IW))
 	R=0
-	db_progress START 0 $TOTWAIT ppp/detect_progress
+	db_progress START 0 2 ppp/detect_progress
 	for P in "" "-U" ; do
-		rm -f /tmp/probe-finished /tmp/ppp-errors
-		( R=$(pppoe-discovery -A $P -I $1 2>/tmp/ppp-errors | \
-			grep AC | wc -l)
-		  echo $R > /tmp/probe-finished ) &
-		WAIT=0
-		TO=0
-
-		while [ ! -f /tmp/probe-finished ]; do
-			log "Timeout detected $TO"
-			sleep 1
-			db_progress STEP 1
-			WAIT=$(($WAIT + 1))
-			if [ $WAIT -ge $MAXWAIT ]; then
-				touch /tmp/probe-finished
-			fi
-			TO=$(grep Timeout /tmp/ppp-errors 2>/dev/null | wc -l || true)
-			if [ $TO -eq 1 ]; then
-				touch /tmp/probe-finished
-				break
-			fi
-			log "pppoe probe output size: $(cat /tmp/probe-finished 2> /dev/null)"
-		done
-		R=$(cat /tmp/probe-finished 2>/dev/null || true)
-		if [ -n "$R" -a 1$R -ne 10 ]; then
+		if pppoe-discovery -Q -t 1 -a 3 $P -I $1 2> /dev/null; then
+			R=1
 			break
 		fi
-		if [ -z "$P" ]; then
-			sleep $IW
-			db_progress STEP $IW
-		fi
+		db_progress STEP 1
 	done
-
-	PROCESS=$(ps -A | grep pppoe-discovery | sed s:^[[:space:]]::g | \
-		  cut -f1 -d' ' || true)
-	if [ $TO -ne 1 -a "$PROCESS" ]; then
-		kill $PROCESS
-	fi
-	rm -f /tmp/probe-finished /tmp/ppp-errors
 	db_progress STOP
-
-	if [ -n "$R" -a 1$R -ne 10 ]; then
+	if [ "$R" = 1 ]; then
 		return 0
 	else
 		return 1
@@ -222,9 +189,9 @@ if [ "$HOSTNAME" ]; then
 	echo "$HOSTNAME" >/etc/hostname
 
 	if [ "$DOMAINNAME" ]; then
-		echo -e "127.0.1.1\t$HOSTNAME.$DOMAINNAME\t$HOSTNAME" >> /etc/hosts
+		printf "127.0.1.1\t$HOSTNAME.$DOMAINNAME\t$HOSTNAME" >> /etc/hosts
 	else
-		echo -e "127.0.1.1\t$HOSTNAME" >> /etc/hosts
+		printf "127.0.1.1\t$HOSTNAME" >> /etc/hosts
 	fi
 fi
 
@@ -255,7 +222,7 @@ user "$USERNAME"
 #debug
 
 # Load the pppoe plugin. Change the ethernet interface name if needed.
-plugin rp-pppoe.so
+plugin pppoe.so
 $IFACE
 
 # Assumes that your IP address is allocated dynamically by the ISP.

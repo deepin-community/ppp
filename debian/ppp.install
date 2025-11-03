@@ -16,6 +16,6 @@ debian/extra/poff			usr/bin/
 debian/extra/pon			usr/bin/
 debian/extra/provider.chatscript	usr/share/ppp/
 debian/extra/provider.peer		usr/share/ppp/
-debian/tmp-ppp/usr/lib/pppd/*		usr/lib/pppd/
-debian/tmp-ppp/usr/sbin/*		usr/sbin/
-debian/tmp-ppp/usr/share/man/*		usr/share/man/
+/usr/lib/pppd/
+/usr/share/man/
+/usr/sbin/

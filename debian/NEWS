@@ -1,3 +1,12 @@
+ppp (2.5.2-1+1~exp1) experimental; urgency=medium
+
+  Many old and unmaintained example scripts, as well as the passprompt pppd
+  plugin, have been removed. If you were using passprompt you should
+  investigate using passwordfd instead: see /usr/share/doc/ppp/README.pwfd for
+  more information and an example program.
+
+ -- Chris Boot <bootc@debian.org>  Sun, 26 Jan 2025 16:31:17 +0000
+
 ppp (2.4.8-1+1~exp1) experimental; urgency=medium
 
   The pppd-dns init script and systemd unit have been removed. These were

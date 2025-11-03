@@ -1,2 +1,4 @@
 debian/extra/dh_ppp usr/bin
 debian/extra/lib/Debian/Debhelper/Sequence/ppp.pm usr/share/perl5/Debian/Debhelper/Sequence/
+/usr/share/pkgconfig/
+/usr/include/

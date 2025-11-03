@@ -1,0 +1,15 @@
+/.debhelper/
+/ppp/
+/ppp-dev/
+/ppp-udeb/
+/tmp-ppp/
+/tmp-udeb/
+
+/changelog-from-README
+/debhelper-build-stamp
+/extra/dh_ppp.1p
+/files
+
+*.debhelper
+*.debhelper.log
+*.substvars

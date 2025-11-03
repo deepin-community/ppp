@@ -137,7 +137,7 @@ iptables --insert FORWARD 1 --proto tcp --tcp-flags SYN,RST SYN \
 
 Naming of PPPoE interfaces
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
-The rp-pppoe plugin usually accepts only eth*, nas* or tap* as interface
+The pppoe plugin usually accepts only eth*, nas* or tap* as interface
 names. Different names can be specified by adding the "nic-" prefix,
 which will be removed by the program.
 

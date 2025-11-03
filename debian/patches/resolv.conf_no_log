@@ -1,11 +1,12 @@
 --- a/pppd/ipcp.c
 +++ b/pppd/ipcp.c
-@@ -2063,7 +2063,7 @@ create_resolv(peerdns1, peerdns2)
+@@ -2155,7 +2155,9 @@ create_resolv(u_int32_t peerdns1, u_int3
  
-     f = fopen(_PATH_RESOLV, "w");
+     f = fopen(PPP_PATH_RESOLV, "w");
      if (f == NULL) {
--	error("Failed to create %s: %m", _PATH_RESOLV);
-+	/* error("Failed to create %s: %m", _PATH_RESOLV); */
++/*
+ 	error("Failed to create %s: %m", PPP_PATH_RESOLV);
++*/
  	return;
      }
  

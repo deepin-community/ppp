@@ -4,7 +4,7 @@ include:
   - https://salsa.debian.org/salsa-ci-team/pipeline/raw/master/pipeline-jobs.yml
 
 variables:
-  # Disable reprotest until salsa-ci-team/pipeline#26 is resolved.
-  SALSA_CI_DISABLE_REPROTEST: 1
+  # https://manpages.debian.org/unstable/reprotest/reprotest.1.en.html#Domain_or_host
+  SALSA_CI_REPROTEST_ARGS: --vary=domain_host.use_sudo=1
 
 # vim: ts=2 sw=2 et sts=2 ft=yaml

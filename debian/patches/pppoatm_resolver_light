@@ -10,25 +10,9 @@ and encourage users interested in the complete features to link the
 plugin with the real libatm. I really doubt anybody cares, anyway.
 
 
---- a/pppd/plugins/pppoatm/Makefile.linux
-+++ b/pppd/plugins/pppoatm/Makefile.linux
-@@ -25,9 +25,13 @@ ifdef HAVE_LIBATM
- LIBS := -latm
- else
- CFLAGS += -I.
-+PLUGIN_OBJS += text2atm.o
-+ifdef USE_FULL_ATM_RESOLVER
-+CFLAGS += -DUSE_FULL_ATM_RESOLVER
- PLUGIN_OBJS += text2qos.o text2atm.o misc.o ans.o
- LIBS := -lresolv
- endif
-+endif
- 
- #*********
- all: $(PLUGIN)
 --- a/pppd/plugins/pppoatm/pppoatm.c
 +++ b/pppd/plugins/pppoatm/pppoatm.c
-@@ -142,8 +142,12 @@ static int connect_pppoatm(void)
+@@ -149,8 +149,12 @@ static int connect_pppoatm(void)
  	qos.txtp.traffic_class = qos.rxtp.traffic_class = ATM_UBR;
  	/* TODO: support simplified QoS setting */
  	if (qosstr != NULL)
@@ -74,3 +58,16 @@ plugin with the real libatm. I really doubt anybody cares, anyway.
 +#endif
      return -1;
  }
+--- a/pppd/plugins/pppoatm/Makefile.am
++++ b/pppd/plugins/pppoatm/Makefile.am
+@@ -13,6 +13,8 @@ pppoatm_la_SOURCES = pppoatm.c
+ if WITH_LIBATM
+ pppoatm_la_LIBADD = -latm
+ else
+-pppoatm_la_SOURCES += text2qos.c text2atm.c misc.c ans.c
+-pppoatm_la_LIBADD = -lresolv
++pppoatm_la_SOURCES += text2atm.c
++#pppoatm_la_CPPFLAGS += -DUSE_FULL_ATM_RESOLVER
++#pppoatm_la_SOURCES += text2qos.c misc.c ans.c
++#pppoatm_la_LIBADD = -lresolv
+ endif

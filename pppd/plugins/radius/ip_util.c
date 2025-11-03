@@ -1,6 +1,4 @@
 /*
- * $Id: ip_util.c,v 1.1 2004/11/14 07:26:26 paulus Exp $
- *
  * Copyright (C) 1995,1996,1997 Lars Fenneberg
  *
  * Copyright 1992 Livingston Enterprises, Inc.
@@ -26,7 +24,7 @@
  * Returns: 0 on failure
  */
 
-UINT4 rc_get_ipaddr (char *host)
+UINT4 rc_get_ipaddr (const char *host)
 {
 	struct hostent *hp;
 
@@ -51,7 +49,7 @@ UINT4 rc_get_ipaddr (char *host)
  *
  */
 
-int rc_good_ipaddr (char *addr)
+int rc_good_ipaddr (const char *addr)
 {
 	int             dot_count;
 	int             digit_count;
@@ -127,7 +125,7 @@ UINT4 rc_own_ipaddress(void)
 	static UINT4 this_host_ipaddr = 0;
 
 	if (!this_host_ipaddr) {
-		if ((this_host_ipaddr = rc_get_ipaddr (hostname)) == 0) {
+		if ((this_host_ipaddr = rc_get_ipaddr (ppp_hostname())) == 0) {
 			error("rc_own_ipaddress: couldn't get own IP address");
 			return 0;
 		}

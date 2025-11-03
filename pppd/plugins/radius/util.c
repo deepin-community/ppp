@@ -1,6 +1,4 @@
 /*
- * $Id: util.c,v 1.1 2004/11/14 07:26:26 paulus Exp $
- *
  * Copyright (C) 1995,1996,1997 Lars Fenneberg
  *
  * Copyright 1992 Livingston Enterprises, Inc.
@@ -75,10 +73,10 @@ rc_mksid (void)
 {
   static char buf[32];
   static unsigned short int cnt = 0;
-  slprintf(buf, sizeof(buf), "%08lX%04X%02hX",
+  snprintf(buf, sizeof(buf), "%08lX%04X%02hX",
 	   (unsigned long int) time (NULL),
 	   (unsigned int) getpid (),
-	   cnt & 0xFF);
+	   (unsigned short) (cnt & 0xFF));
   cnt++;
   return buf;
 }
