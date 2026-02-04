@@ -1,3 +1,9 @@
+ppp (2.4.9-1+1deepin2) unstable; urgency=medium
+
+  * fix CVE-2024-58250 
+
+ -- zengwei <zengwei1@uniontech.com>  Wed, 04 Feb 2026 16:53:12 +0800
+
 ppp (2.4.9-1+1deepin1) unstable; urgency=medium
 
   * update symbols for loong64
