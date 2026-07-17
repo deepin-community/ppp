@@ -1,19 +1,16 @@
 # to be merged upstream
+001_missing_sockaddr_ll
 chat_man
-pppdump_use_zlib
 pppoatm_resolver_light
 pppoe_noads
+pppd.8-fix-groff-warning.patch
 
 # not ready to be merged
-011_scripts_redialer.diff
 ppp-2.3.11-oedod.dif
 
 # debian-specific
-010_scripts_README.diff
-no_crypt_hack
 resolv.conf_no_log
 zzz_config
 pppd-soname-hack.patch
-replace-vendored-hash-functions.patch
-CVE-2024-58250.patch
-CVE-2022-4603.patch
+
+# upstream backports

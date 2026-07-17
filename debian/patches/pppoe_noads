@@ -1,11 +1,12 @@
 --- a/pppd/plugins/pppoe/plugin.c
 +++ b/pppd/plugins/pppoe/plugin.c
-@@ -412,8 +412,6 @@
-     }
+@@ -422,7 +422,9 @@ plugin_init(void)
  
-     add_options(Options);
--
--    info("PPPoE plugin from pppd %s", VERSION);
+     ppp_add_options(Options);
+ 
++/*
+     info("PPPoE plugin from pppd %s", PPPD_VERSION);
++*/
  }
  
  void pppoe_check_options(void)

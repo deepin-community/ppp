@@ -1,21 +1,102 @@
-ppp (2.4.9-1+1deepin3) unstable; urgency=medium
+ppp (2.5.2-1+1) unstable; urgency=medium
 
-  * fix CVE-2022-4603
-    pppdump: Avoid out-of-range access to packet buffer
+  * Upload to unstable.
 
- -- deepin-ci-robot <packages@deepin.org>  Thu, 04 Jun 2026 09:00:00 +0800
+ -- Chris Boot <bootc@debian.org>  Mon, 17 Feb 2025 22:11:36 +0000
 
-ppp (2.4.9-1+1deepin2) unstable; urgency=medium
+ppp (2.5.2-1+1~exp1) experimental; urgency=medium
 
-  * fix CVE-2024-58250
+  [ Carles Pina i Estany ]
+  * Update Catalan po-debconf translation.
 
- -- zengwei <zengwei1@uniontech.com>  Wed, 04 Feb 2026 16:53:12 +0800
+  [ Pascal Hambourg ]
+  * ppp-udeb: Rewrite PPPoE access concentrator detection.
 
-ppp (2.4.9-1+1deepin1) unstable; urgency=medium
+  [ Chris Boot ]
+  * New upstream release:
+    - Add NEWS entry describing removal of passprompt plugin and several
+      example scripts.
+    - Refresh patches.
+    - d/patches: remove 010_scripts_README.diff and 011_scripts_redialer.diff:
+      patches apply to files removed upstream.
+  * d/ppp.lintian-overrides: update overrides for new version.
+  * d/patches/pppd.8-fix-groff-warning.patch: fix manpage bug.
+  * Update standards version to 4.7.0, no changes needed.
+  * d/ppp-udeb.postinst: replace harmless bashism.
+  * d/ppp-udeb.lintian-overrides: fix line offsets.
+  * d/rules: silence blhc by not stripping -O2 from udeb build.
+  * d/*.lintian-overrides: use wildcards to match rules better.
+  * Upload to experimental.
 
-  * update symbols for loong64
+ -- Chris Boot <bootc@debian.org>  Sat, 15 Feb 2025 17:41:53 +0000
 
- -- Chang Yang <yangchang@deepin.org>  Wed, 24 Jan 2024 11:52:22 +0800
+ppp (2.5.1-1+1) unstable; urgency=medium
+
+  * d/ppp@.service: add missing nolog to ExecStart
+  * Upload to unstable.
+
+ -- Chris Boot <bootc@debian.org>  Fri, 22 Nov 2024 15:27:10 +0000
+
+ppp (2.5.1-1+1~exp1) experimental; urgency=medium
+
+  * New upstream release:
+    - Refresh patches.
+    - d/ppp.symbols: update for the new version.
+  * Add ppp@.service systemd unit file. (Closes: #1066911)
+  * d/rules: don't fail if static library isn't built. (Closes: #1071607)
+  * Upload to experimental.
+
+ -- Chris Boot <bootc@debian.org>  Thu, 10 Oct 2024 15:55:20 +0100
+
+ppp (2.5.0-1+2) unstable; urgency=medium
+
+  * Fix build on loong64. (Closes: #1052308)
+  * Fix changelog entry for NMU ack in 2.5.0-1+1. (Closes: #1009306)
+  * Upload to unstable.
+
+ -- Chris Boot <bootc@debian.org>  Sat, 20 Apr 2024 17:05:03 +0100
+
+ppp (2.5.0-1+1) experimental; urgency=medium
+
+  [ Debian Janitor ]
+  * Remove 1 obsolete maintscript entry.
+  * Update renamed lintian tag names in lintian overrides.
+  * Update standards version to 4.6.1, no changes needed.
+  * Update lintian override info format in d/ppp.lintian-overrides on line 2,
+    5-6, 12, 15.
+  * Set upstream metadata fields: Bug-Database, Bug-Submit, Repository-Browse.
+  * Remove constraints unnecessary since buster (oldstable):
+    + ppp: Drop versioned constraint on network-manager, network-manager-pptp
+      and pppdcapiplugin in Breaks.
+
+  [ Marco d'Itri ]
+  * New upstream release. (Closes: #992205, #1009651)
+
+  [ Chris Boot ]
+  * Acknowledge NMU. (Closes: #1009306)
+  * Remove shipped pppd/pppdconf.h when configuring.
+  * Drop removed pppoe-discovery -A switch in ppp-udeb. (Closes: #1042881)
+  * Add comments to resolv.conf when rewritten by 0000usepeerdns. (Closes:
+    #970075, #979611)
+  * Upload to experimental.
+
+ -- Chris Boot <bootc@debian.org>  Sun, 10 Sep 2023 19:03:09 +0530
+
+ppp (2.4.9-1+1.1) unstable; urgency=high
+
+  * Non-maintainer upload
+
+  [ Paul Wise ]
+  * Compile for host architecture (Closes: #990021)
+
+  [ Till Kamppeter ]
+  * Let 0000usepeerdns exit when NetworkManager is in use (LP: #1778946)
+
+  [ Eivind Næss ]
+  * d/p/eap-mschap-v2-namelen.patch: fix the length of the username when
+    responding to an EAP MSCHAPv2 challenge (LP: #1958196)
+
+ -- Bastian Germann <bage@debian.org>  Mon, 11 Apr 2022 11:11:33 +0200
 
 ppp (2.4.9-1+1) unstable; urgency=medium
 

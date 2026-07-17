@@ -7,24 +7,14 @@ Author: Chris Boot <bootc@debian.org>
 Forwarded: not-needed
 Last-Update: 2015-12-05
 
---- a/pppd/Makefile.linux
-+++ b/pppd/Makefile.linux
-@@ -216,6 +216,8 @@
+--- a/pppd/Makefile.am
++++ b/pppd/Makefile.am
+@@ -213,6 +213,8 @@
  
- INSTALL= install
+ pppd_LDADD = $(pppd_LIBS)
  
-+VERSION = $(shell awk -F '"' '/VERSION/ { print $$2; }' patchlevel.h)
++pppd_LDFLAGS += -Wl,-soname,pppd.so.$(PACKAGE_VERSION)
 +
- all: $(TARGETS)
- 
- install: pppd
-@@ -227,7 +229,8 @@
- 	$(INSTALL) -c -m 444 pppd.8 $(MANDIR)
- 
- pppd: $(PPPDOBJS)
--	$(CC) $(CFLAGS) $(LDFLAGS) $(LDFLAGS_PLUGIN) -o pppd $(PPPDOBJS) $(LIBS)
-+	$(CC) $(CFLAGS) $(LDFLAGS) $(LDFLAGS_PLUGIN) -o pppd $(PPPDOBJS) $(LIBS) \
-+		-Wl,-soname,pppd.so.$(VERSION)
- 
- srp-entry:	srp-entry.c
- 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ srp-entry.c $(LIBS)
+ EXTRA_DIST = \
+     ppp.pam \
+     srp-entry.8

@@ -1,6 +1,4 @@
 /*
- * $Id: clientid.c,v 1.1 2004/11/14 07:26:26 paulus Exp $
- *
  * Copyright (C) 1995,1996,1997 Lars Fenneberg
  *
  * See the file COPYRIGHT for the respective terms and conditions.
@@ -68,10 +66,15 @@ int rc_read_mapfile(char *filename)
 
 			if ((p = (struct map2id_s *)malloc(sizeof(*p))) == NULL) {
 				novm("rc_read_mapfile");
+				fclose(mapfd);
 				return (-1);
 			}
 
-			p->name = strdup(name);
+			if ((p->name = strdup(name)) == NULL) {
+				novm("rc_read_mapfile");
+				fclose(mapfd);
+				return (-1);
+			}
 			p->id = atoi(id);
 			p->next = map2id_list;
 			map2id_list = p;
@@ -79,6 +82,7 @@ int rc_read_mapfile(char *filename)
 		} else {
 
 			error("rc_read_mapfile: malformed line in %s, line %d", filename, lnr);
+			fclose(mapfd);
 			return (-1);
 
 		}
@@ -101,7 +105,7 @@ int rc_read_mapfile(char *filename)
  * Returns: port id, zero if no entry found
  */
 
-UINT4 rc_map2id(char *name)
+UINT4 rc_map2id(const char *name)
 {
 	struct map2id_s *p;
 	char ttyname[PATH_MAX];

@@ -1,24 +1,38 @@
-pppd.so.2.4.9 ppp #MINVER#
+pppd.so.2.5.1 ppp #MINVER#
 * Build-Depends-Package: ppp-dev
 # Ignore all symbols that start with an underscore in the Base module
  (regex|optional)"^_.*@Base$" 2.4.7-1+2~
 # Ignore $global$ which seems to appear on hppa only
- (optional|arch=!loong64)$global$@Base 2.4.7-1+2~
+ (optional)$global$@Base 2.4.7-1+2~
 # Ignore everything that claims it's part of glibc
- (regex|optional|arch=!loong64)"@GLIBC_" 2.4.7-1+2~
+ (regex|optional)"@GLIBC_" 2.4.7-1+2~
 # All others should be pppd symbols
  ChallengeHash@Base 2.4.7-1+2~
  ChapMS2@Base 2.4.7-1+2~
  ChapMS@Base 2.4.7-1+2~
  DesDecrypt@Base 2.4.7-1+2~
  DesEncrypt@Base 2.4.7-1+2~
- DesSetkey@Base 2.4.7-1+2~
  GenerateAuthenticatorResponse@Base 2.4.7-1+2~
  GetMask@Base 2.4.7-1+2~
+ PPP_CIPHER_CTX_free@Base 2.5.0-1+1~
+ PPP_CIPHER_CTX_new@Base 2.5.0-1+1~
+ PPP_CipherFinal@Base 2.5.0-1+1~
+ PPP_CipherInit@Base 2.5.0-1+1~
+ PPP_CipherUpdate@Base 2.5.0-1+1~
+ PPP_DigestFinal@Base 2.5.0-1+1~
+ PPP_DigestInit@Base 2.5.0-1+1~
+ PPP_DigestUpdate@Base 2.5.0-1+1~
+ PPP_MD_CTX_free@Base 2.5.0-1+1~
+ PPP_MD_CTX_new@Base 2.5.0-1+1~
+ PPP_crypto_deinit@Base 2.5.0-1+1~
+ PPP_crypto_error@Base 2.5.1-1+1~
+ PPP_crypto_init@Base 2.5.0-1+1~
+ PPP_des_ecb@Base 2.5.0-1+1~
+ PPP_md4@Base 2.5.0-1+1~
+ PPP_md5@Base 2.5.0-1+1~
+ PPP_sha1@Base 2.5.0-1+1~
  active_filter@Base 2.4.7-1+2~
  add_fd@Base 2.4.7-1+2~
- add_notifier@Base 2.4.7-1+2~
- add_options@Base 2.4.7-1+2~
  allow_any_ip@Base 2.4.7-1+2~
  allowed_address_hook@Base 2.4.7-1+2~
  asked_to_quit@Base 2.4.7-1+2~
@@ -34,7 +48,6 @@ pppd.so.2.4.9 ppp #MINVER#
  auth_up_notifier@Base 2.4.7-1+2~
  auth_withpeer_fail@Base 2.4.7-1+2~
  auth_withpeer_success@Base 2.4.7-1+2~
- bad_ip_adrs@Base 2.4.7-1+2~
  baud_rate@Base 2.4.7-1+2~
  blinks_id@Base 2.4.7-1+2~
  bundle_attach@Base 2.4.7-1+2~
@@ -86,9 +99,9 @@ pppd.so.2.4.9 ppp #MINVER#
  cifaddr@Base 2.4.7-1+2~
  cifdefaultroute@Base 2.4.7-1+2~
  cifproxyarp@Base 2.4.7-1+2~
- cipxfaddr@Base 2.4.7-1+2~
  clean_check@Base 2.4.7-1+2~
  cleanup_tty@Base 2.4.7-1+2~
+ code@Base 2.5.0-1+1~
  complete_read@Base 2.4.7-1+2~
  connect_delay@Base 2.4.7-1+2~
  connect_script@Base 2.4.7-1+2~
@@ -99,10 +112,12 @@ pppd.so.2.4.9 ppp #MINVER#
  crtscts@Base 2.4.7-1+2~
  cryptpap@Base 2.4.7-1+2~
  current_option@Base 2.4.7-1+2~
- (arch=!loong64)data_start@Base 2.4.7-1+2~
+# Doesn't exist on loong64
+ (optional)data_start@Base 2.4.7-1+2~
  db_key@Base 2.4.7-1+2~
  dbglog@Base 2.4.7-1+2~
  debug@Base 2.4.7-1+2~
+ debug_on@Base 2.5.0-1+1~
  default_device@Base 2.4.7-1+2~
  demand@Base 2.4.7-1+2~
  demand_block@Base 2.4.7-1+2~
@@ -181,21 +196,19 @@ pppd.so.2.4.9 ppp #MINVER#
  fsm_open@Base 2.4.7-1+2~
  fsm_protreject@Base 2.4.7-1+2~
  fsm_sdata@Base 2.4.7-1+2~
+ g_crypto_ctx@Base 2.5.0-1+1~
  general_options@Base 2.4.7-1+2~
- generic_disestablish_ppp@Base 2.4.7-1+2~
- generic_establish_ppp@Base 2.4.7-1+2~
- get_X509_from_file@Base 2.4.7-2+1~
  get_eaptls_secret@Base 2.4.7-2+1~
  get_first_ether_hwaddr@Base 2.4.9-1+1~
  get_host_seed@Base 2.4.7-1+2~
  get_idle_time@Base 2.4.7-1+2~
  get_if_hwaddr@Base 2.4.7-1+2~
  get_loop_output@Base 2.4.7-1+2~
+ get_notifier_by_type@Base 2.5.0-1+1~
  get_ppp_stats@Base 2.4.7-1+2~
  get_pty@Base 2.4.7-1+2~
  get_secret@Base 2.4.7-1+2~
  get_srp_secret@Base 2.4.7-1+2~
- get_time@Base 2.4.9-1+1~
  getword@Base 2.4.7-1+2~
  got_sighup@Base 2.4.7-1+2~
  got_sigterm@Base 2.4.7-1+2~
@@ -211,12 +224,12 @@ pppd.so.2.4.9 ppp #MINVER#
  idle_time_limit@Base 2.4.7-1+2~
  ifname@Base 2.4.7-1+2~
  ifunit@Base 2.4.7-1+2~
+ in_phase@Base 2.5.0-1+1~
  info@Base 2.4.7-1+2~
  init_pr_log@Base 2.4.7-1+2~
  initializer@Base 2.4.7-1+2~
  inpacket_buf@Base 2.4.7-1+2~
  inspeed@Base 2.4.7-1+2~
- int_option@Base 2.4.7-1+2~
  ip_choose_hook@Base 2.4.7-1+2~
  ip_down_hook@Base 2.4.7-1+2~
  ip_down_notifier@Base 2.4.7-1+2~
@@ -240,12 +253,6 @@ pppd.so.2.4.9 ppp #MINVER#
  ipv6cp_hisoptions@Base 2.4.7-1+2~
  ipv6cp_protent@Base 2.4.7-1+2~
  ipv6cp_wantoptions@Base 2.4.7-1+2~
- ipxcp_allowoptions@Base 2.4.7-1+2~
- ipxcp_fsm@Base 2.4.7-1+2~
- ipxcp_gotoptions@Base 2.4.7-1+2~
- ipxcp_hisoptions@Base 2.4.7-1+2~
- ipxcp_protent@Base 2.4.7-1+2~
- ipxcp_wantoptions@Base 2.4.7-1+2~
  kdebugflag@Base 2.4.7-1+2~
  kill_link@Base 2.4.7-1+2~
  lax_recv@Base 2.4.7-1+2~
@@ -262,6 +269,7 @@ pppd.so.2.4.9 ppp #MINVER#
  lcp_lowerup@Base 2.4.7-1+2~
  lcp_open@Base 2.4.7-1+2~
  lcp_protent@Base 2.4.7-1+2~
+ lcp_rtt_file@Base 2.5.1-1+1~
  lcp_sprotrej@Base 2.4.7-1+2~
  lcp_wantoptions@Base 2.4.7-1+2~
  link_connect_time@Base 2.4.7-1+2~
@@ -270,6 +278,7 @@ pppd.so.2.4.9 ppp #MINVER#
  link_established@Base 2.4.7-1+2~
  link_required@Base 2.4.7-1+2~
  link_stats@Base 2.4.7-1+2~
+ link_stats_print@Base 2.5.0-1+1~
  link_stats_valid@Base 2.4.7-1+2~
  link_terminated@Base 2.4.7-1+2~
  linkname@Base 2.4.7-1+2~
@@ -280,9 +289,7 @@ pppd.so.2.4.9 ppp #MINVER#
  locked@Base 2.4.7-1+2~
  lockflag@Base 2.4.7-1+2~
  log_default@Base 2.4.7-1+2~
- log_ssl_errors@Base 2.4.7-2+1~
  log_to_fd@Base 2.4.7-1+2~
- logwtmp@Base 2.4.9-1+1~
  loop_chars@Base 2.4.7-1+2~
  loop_frame@Base 2.4.7-1+2~
  magic@Base 2.4.7-1+2~
@@ -297,23 +304,30 @@ pppd.so.2.4.9 ppp #MINVER#
  maxoctets@Base 2.4.7-1+2~
  maxoctets_dir@Base 2.4.7-1+2~
  maxoctets_timeout@Base 2.4.7-1+2~
+ mkdir_recursive@Base 2.5.1-1+1~
  modem@Base 2.4.7-1+2~
  mp_bundle_terminated@Base 2.4.7-1+2~
  mp_check_options@Base 2.4.7-1+2~
  mp_exit_bundle@Base 2.4.7-1+2~
  mp_join_bundle@Base 2.4.7-1+2~
+ mp_master@Base 2.5.0-1+1~
+ mp_on@Base 2.5.0-1+1~
+ mppe_clear_keys@Base 2.5.0-1+1~
+ mppe_get_recv_key@Base 2.5.0-1+1~
+ mppe_get_send_key@Base 2.5.0-1+1~
+ mppe_keys_isset@Base 2.5.0-1+1~
  mppe_keys_set@Base 2.4.7-1+2~
  mppe_recv_key@Base 2.4.7-1+2~
  mppe_send_key@Base 2.4.7-1+2~
- mppe_set_keys2@Base 2.4.7-1+2~
+ mppe_set_chapv1@Base 2.5.0-1+1~
+ mppe_set_chapv2@Base 2.5.0-1+1~
+ mppe_set_enc_types@Base 2.5.0-1+1~
  mppe_set_keys@Base 2.4.7-1+2~
  multilink@Base 2.4.7-1+2~
  multilink_join_hook@Base 2.4.7-1+2~
  multilink_master@Base 2.4.7-1+2~
  need_holdoff@Base 2.4.7-1+2~
  need_peer_eap@Base 2.4.7-2+1~
- netif_get_mtu@Base 2.4.7-1+2~
- netif_set_mtu@Base 2.4.7-1+2~
  netmask@Base 2.4.7-1+2~
  new_phase@Base 2.4.7-1+2~
  new_phase_hook@Base 2.4.7-1+2~
@@ -334,11 +348,9 @@ pppd.so.2.4.9 ppp #MINVER#
  null_auth_hook@Base 2.4.7-1+2~
  open_ccp_flag@Base 2.4.7-1+2~
  open_ppp_loopback@Base 2.4.7-1+2~
- option_error@Base 2.4.7-1+2~
  option_priority@Base 2.4.7-1+2~
  option_source@Base 2.4.7-1+2~
  options_for_tty@Base 2.4.7-1+2~
- options_from_file@Base 2.4.7-1+2~
  options_from_list@Base 2.4.7-1+2~
  options_from_user@Base 2.4.7-1+2~
  our_name@Base 2.4.7-1+2~
@@ -355,8 +367,20 @@ pppd.so.2.4.9 ppp #MINVER#
  pass_filter@Base 2.4.7-1+2~
  passwd@Base 2.4.7-1+2~
  password_callback@Base 2.4.7-2+1~
+ path_chapfile@Base 2.5.1-1+1~
  path_ipdown@Base 2.4.7-1+2~
+ path_ippreup@Base 2.5.1-1+1~
  path_ipup@Base 2.4.7-1+2~
+ path_ipv6down@Base 2.5.0-1+1~
+ path_ipv6up@Base 2.5.0-1+1~
+ path_net_down@Base 2.5.1-1+1~
+ path_net_init@Base 2.5.1-1+1~
+ path_net_preup@Base 2.5.1-1+1~
+ path_upapfile@Base 2.5.1-1+1~
+ peap_do_inner_eap@Base 2.5.0-1+1~
+ peap_finish@Base 2.5.0-1+1~
+ peap_init@Base 2.5.0-1+1~
+ peap_process@Base 2.5.0-1+1~
  peer_authname@Base 2.4.7-1+2~
  peer_mru@Base 2.4.7-1+2~
  pend_q@Base 2.4.7-1+2~
@@ -365,12 +389,65 @@ pppd.so.2.4.9 ppp #MINVER#
  phase@Base 2.4.7-1+2~
  phasechange@Base 2.4.7-1+2~
  pidchange@Base 2.4.7-1+2~
- ppp_available@Base 2.4.7-1+2~
+ pkcs12_file@Base 2.5.0-1+1~
+ ppp_add_notify@Base 2.5.0-1+1~
+ ppp_add_options@Base 2.5.0-1+1~
+ ppp_bad_ip_addr@Base 2.5.0-1+1~
+ ppp_check_kernel_support@Base 2.5.0-1+1~
+ ppp_del_notify@Base 2.5.0-1+1~
  ppp_dev_fd@Base 2.4.7-1+2~
  ppp_devnam@Base 2.4.7-1+2~
+ ppp_devname@Base 2.5.0-1+1~
+ ppp_generic_disestablish@Base 2.5.0-1+1~
+ ppp_generic_establish@Base 2.5.0-1+1~
+ ppp_get_filepath@Base 2.5.0-1+1~
+ ppp_get_ifname@Base 2.5.0-1+1~
+ ppp_get_link_stats@Base 2.5.0-1+1~
+ ppp_get_link_uptime@Base 2.5.0-1+1~
+ ppp_get_max_connect_time@Base 2.5.0-1+1~
+ ppp_get_max_idle_time@Base 2.5.0-1+1~
+ ppp_get_modem@Base 2.5.0-1+1~
+ ppp_get_mtu@Base 2.5.0-1+1~
+ ppp_get_path@Base 2.5.0-1+1~
+ ppp_get_remote_number@Base 2.5.0-1+1~
+ ppp_get_session_number@Base 2.5.0-1+1~
+ ppp_get_time@Base 2.5.0-1+1~
+ ppp_hostname@Base 2.5.0-1+1~
+ ppp_ifname@Base 2.5.0-1+1~
+ ppp_ifunit@Base 2.5.0-1+1~
+ ppp_int_option@Base 2.5.0-1+1~
+ ppp_ipparam@Base 2.5.0-1+1~
+ ppp_option_error@Base 2.5.0-1+1~
+ ppp_options_from_file@Base 2.5.0-1+1~
+ ppp_peer_authname@Base 2.5.0-1+1~
+ ppp_persist@Base 2.5.0-1+1~
+ ppp_pppdevnam@Base 2.5.0-1+1~
  ppp_recv_config@Base 2.4.7-1+2~
+ ppp_remote_name@Base 2.5.0-1+1~
+ ppp_safe_fork@Base 2.5.0-1+1~
+ ppp_script_setenv@Base 2.5.0-1+1~
+ ppp_script_unsetenv@Base 2.5.0-1+1~
  ppp_send_config@Base 2.4.7-1+2~
  ppp_session_number@Base 2.4.7-1+2~
+ ppp_set_devnam@Base 2.5.0-1+1~
+ ppp_set_ifname@Base 2.5.0-1+1~
+ ppp_set_max_connect_time@Base 2.5.0-1+1~
+ ppp_set_max_idle_time@Base 2.5.0-1+1~
+ ppp_set_modem@Base 2.5.0-1+1~
+ ppp_set_mtu@Base 2.5.0-1+1~
+ ppp_set_pppdevnam@Base 2.5.0-1+1~
+ ppp_set_remote_number@Base 2.5.0-1+1~
+ ppp_set_session_limit@Base 2.5.0-1+1~
+ ppp_set_session_limit_dir@Base 2.5.0-1+1~
+ ppp_set_session_number@Base 2.5.0-1+1~
+ ppp_set_status@Base 2.5.0-1+1~
+ ppp_signaled@Base 2.5.0-1+1~
+ ppp_status@Base 2.5.0-1+1~
+ ppp_sync_serial@Base 2.5.0-1+1~
+ ppp_sys_close@Base 2.5.0-1+1~
+ ppp_timeout@Base 2.5.0-1+1~
+ ppp_untimeout@Base 2.5.0-1+1~
+ ppp_using_pty@Base 2.5.0-1+1~
  pppdb@Base 2.4.7-1+2~
  pr_log@Base 2.4.7-1+2~
  print_link_stats@Base 2.4.7-1+2~
@@ -400,7 +477,6 @@ pppd.so.2.4.9 ppp #MINVER#
  remote_name@Base 2.4.7-1+2~
  remote_number@Base 2.4.7-1+2~
  remove_fd@Base 2.4.7-1+2~
- remove_notifier@Base 2.4.7-1+2~
  remove_pidfiles@Base 2.4.7-1+2~
  reopen_log@Base 2.4.7-1+2~
  req_ifname@Base 2.4.7-1+2~
@@ -410,19 +486,17 @@ pppd.so.2.4.9 ppp #MINVER#
  route_fd@Base 2.4.7-1+2~
  run_program@Base 2.4.7-1+2~
  s_env_nalloc@Base 2.4.7-1+2~
- safe_fork@Base 2.4.7-1+2~
  script_env@Base 2.4.7-1+2~
- script_setenv@Base 2.4.7-1+2~
- script_unsetenv@Base 2.4.7-1+2~
  session_end@Base 2.4.7-1+2~
  session_mgmt@Base 2.4.7-1+2~
  session_start@Base 2.4.7-1+2~
  set_filters@Base 2.4.7-1+2~
  set_ifunit@Base 2.4.7-1+2~
- set_mppe_enc_types@Base 2.4.7-1+2~
  set_up_tty@Base 2.4.7-1+2~
  setdtr@Base 2.4.7-1+2~
  setipaddr@Base 2.4.7-1+2~
+ show_options@Base 2.5.0-1+1~
+ showopts@Base 2.5.0-1+1~
  sif6addr@Base 2.4.7-1+2~
  sif6defaultroute@Base 2.4.8-1+1~
  sif6down@Base 2.4.7-1+2~
@@ -435,18 +509,14 @@ pppd.so.2.4.9 ppp #MINVER#
  sifup@Base 2.4.7-1+2~
  sifvjcomp@Base 2.4.7-1+2~
  sigreceived@Base 2.4.7-1+2~
- sipxfaddr@Base 2.4.7-1+2~
  slprintf@Base 2.4.7-1+2~
  snoop_recv_hook@Base 2.4.7-1+2~
  snoop_send_hook@Base 2.4.7-1+2~
  speeds@Base 2.4.7-1+2~
- ssl_cmp_certs@Base 2.4.7-2+1~
  ssl_msg_callback@Base 2.4.7-2+1~
  ssl_new_session_cb@Base 2.4.9-1+1~
- ssl_verify_callback@Base 2.4.7-2+1~
  start_link@Base 2.4.7-1+2~
  start_networks@Base 2.4.7-1+2~
- status@Base 2.4.7-1+2~
  stop_bits@Base 2.4.7-1+2~
  str_to_epdisc@Base 2.4.7-1+2~
  strlcat@Base 2.4.7-1+2~
@@ -454,40 +524,35 @@ pppd.so.2.4.9 ppp #MINVER#
  sync_serial@Base 2.4.7-1+2~
  sys_check_options@Base 2.4.7-1+2~
  sys_cleanup@Base 2.4.7-1+2~
- sys_close@Base 2.4.7-1+2~
  sys_init@Base 2.4.7-1+2~
- tdb_append@Base 2.4.7-1+2~
  tdb_chainlock@Base 2.4.7-1+2~
- tdb_chainlock_read@Base 2.4.7-1+2~
  tdb_chainunlock@Base 2.4.7-1+2~
- tdb_chainunlock_read@Base 2.4.7-1+2~
  tdb_clear_spinlocks@Base 2.4.7-1+2~
  tdb_close@Base 2.4.7-1+2~
  tdb_create_rwlocks@Base 2.4.7-1+2~
  tdb_delete@Base 2.4.7-1+2~
- tdb_dump_all@Base 2.4.7-1+2~
  tdb_error@Base 2.4.7-1+2~
  tdb_errorstr@Base 2.4.7-1+2~
- tdb_exists@Base 2.4.7-1+2~
  tdb_fetch@Base 2.4.7-1+2~
- tdb_firstkey@Base 2.4.7-1+2~
- tdb_lockall@Base 2.4.7-1+2~
- tdb_logging_function@Base 2.4.7-1+2~
- tdb_nextkey@Base 2.4.7-1+2~
  tdb_null@Base 2.4.7-1+2~
  tdb_open@Base 2.4.7-1+2~
  tdb_open_ex@Base 2.4.7-1+2~
- tdb_printfreelist@Base 2.4.7-1+2~
- tdb_reopen@Base 2.4.7-1+2~
- tdb_reopen_all@Base 2.4.7-1+2~
- tdb_set_lock_alarm@Base 2.4.7-1+2~
  tdb_spinlock@Base 2.4.7-1+2~
  tdb_spinunlock@Base 2.4.7-1+2~
  tdb_store@Base 2.4.7-1+2~
- tdb_traverse@Base 2.4.7-1+2~
- tdb_unlockall@Base 2.4.7-1+2~
  the_channel@Base 2.4.7-1+2~
- timeout@Base 2.4.7-1+2~
+ tls_free_verify_info@Base 2.5.0-1+1~
+ tls_init@Base 2.5.0-1+1~
+ tls_log_sslerr@Base 2.5.0-1+1~
+ tls_method@Base 2.5.0-1+1~
+ tls_set_ca@Base 2.5.0-1+1~
+ tls_set_crl@Base 2.5.0-1+1~
+ tls_set_opts@Base 2.5.0-1+1~
+ tls_set_verify@Base 2.5.0-1+1~
+ tls_set_verify_info@Base 2.5.0-1+1~
+ tls_set_version@Base 2.5.0-1+1~
+ tls_verify_key_usage@Base 2.5.0-1+1~
+ tls_verify_method@Base 2.5.0-1+1~
  tty_channel@Base 2.4.7-1+2~
  tty_check_options@Base 2.4.7-1+2~
  tty_close_fds@Base 2.4.7-1+2~
@@ -496,7 +561,6 @@ pppd.so.2.4.9 ppp #MINVER#
  tty_establish_ppp@Base 2.4.7-1+2~
  tty_init@Base 2.4.7-1+2~
  tty_mode@Base 2.4.7-1+2~
- tty_options@Base 2.4.7-1+2~
  tty_process_extra_options@Base 2.4.7-1+2~
  tty_recv_config@Base 2.4.7-1+2~
  tty_send_config@Base 2.4.7-1+2~
@@ -506,7 +570,6 @@ pppd.so.2.4.9 ppp #MINVER#
  unlock@Base 2.4.7-1+2~
  unlock_db@Base 2.4.7-1+2~
  unsuccess@Base 2.4.7-1+2~
- untimeout@Base 2.4.7-1+2~
  up_sdnotify@Base 2.4.8-1+1~
  upap@Base 2.4.7-1+2~
  upap_authpeer@Base 2.4.7-1+2~
