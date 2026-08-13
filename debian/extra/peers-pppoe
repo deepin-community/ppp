@@ -9,7 +9,7 @@
 user "myusername@realm"
 
 # Load the PPPoE plugin.
-plugin pppoe.so
+plugin rp-pppoe.so
 
 # Ethernet interface to which the modem is connected.
 eth0

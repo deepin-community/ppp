@@ -1,4 +1,6 @@
 /*
+ * $Id: includes.h,v 1.1 2004/11/14 07:26:26 paulus Exp $
+ *
  * Copyright (C) 1997 Lars Fenneberg
  *
  * Copyright 1992 Livingston Enterprises, Inc.
@@ -45,7 +47,7 @@
 
 #include <time.h>
 
-#include <pppd/magic.h>
+#include "magic.h"
 
 /* rlib/lock.c */
 int do_lock_exclusive(int);

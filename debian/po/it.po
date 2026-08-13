@@ -4,12 +4,12 @@ msgstr ""
 "Project-Id-Version: ppp 2.4.4rel\n"
 "Report-Msgid-Bugs-To: ppp@packages.debian.org\n"
 "POT-Creation-Date: 2012-09-02 11:02-0400\n"
-"PO-Revision-Date: 2023-01-22 23:43+0200\n"
+"PO-Revision-Date: 2007-01-29 20:50+0200\n"
 "Last-Translator: Marco d'Itri <md@linux.it>\n"
 "Language-Team: Italian <tp@lists.linux.it>\n"
 "Language: it\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Type: text/plain; charset=ISO-8859-1\n"
 "Content-Transfer-Encoding: 8bit\n"
 
 #. Type: text
@@ -22,8 +22,10 @@ msgstr "Configura e attiva una connessione PPPoE"
 #. Type: error
 #. Description
 #: ../ppp-udeb.templates:3001
+#, fuzzy
+#| msgid "No concentrator was found"
 msgid "No PPPoE concentrator"
-msgstr "Non ci sono concentratori per PPPoE"
+msgstr "Non è stato trovato un concentratore"
 
 #. Type: error
 #. Description
@@ -32,7 +34,7 @@ msgid ""
 "All network interfaces have been probed, but a PPPoE concentrator was not "
 "detected."
 msgstr ""
-"Si Ã¨ cercato su ogni interfaccia di rete, ma non Ã¨ stato trovato un "
+"Si è cercato su ogni interfaccia di rete, ma non è stato trovato un "
 "concentratore per PPPoE."
 
 #. Type: error
@@ -45,43 +47,53 @@ msgstr ""
 #. Description
 #: ../ppp-udeb.templates:3001 ../ppp-udeb.templates:7001
 #: ../ppp-udeb.templates:9001 ../ppp-udeb.templates:10001
+#, fuzzy
+#| msgid ""
+#| "The configuration of PPPoE is aborted. It can be attempted again by "
+#| "selecting the relevant menu entry."
 msgid ""
 "The configuration of PPPoE has been aborted. It can be attempted again by "
 "selecting the relevant menu entry."
 msgstr ""
-"La configurazione di PPPoE Ã¨ stata annullata. Si puÃ² provare di nuovo "
-"selezionando la voce dal menÃ¹."
+"La configurazione di PPPoE è annullata. Può essere tentata di nuovo "
+"selezionando la voce dal menù."
 
 #. Type: string
 #. Description
 #: ../ppp-udeb.templates:4001
 msgid "Interface name:"
-msgstr "Nome dell'interfaccia:"
+msgstr ""
 
 #. Type: string
 #. Description
 #: ../ppp-udeb.templates:4001
+#, fuzzy
+#| msgid "Please enter the username for the PPP connection."
 msgid ""
 "Please enter the name of the network interface connected to the PPPoE modem."
-msgstr "Inserire il nome dell'interfaccia di rete collegata al modem PPPoE."
+msgstr "Inserire l'username per la connessione PPP."
 
 #. Type: string
 #. Description
 #: ../ppp-udeb.templates:5001
 msgid "ISP account username:"
-msgstr "Nome utente dell'account del provider:"
+msgstr ""
 
 #. Type: string
 #. Description
 #: ../ppp-udeb.templates:5001
 msgid "Please enter the username for the PPP connection."
-msgstr "Inserire il nome utente per la connessione PPP."
+msgstr "Inserire l'username per la connessione PPP."
 
 #. Type: string
 #. Description
 #. Type: password
 #. Description
 #: ../ppp-udeb.templates:5001 ../ppp-udeb.templates:6001
+#, fuzzy
+#| msgid ""
+#| "This information should have been provided to you by your Internet "
+#| "Service Provider."
 msgid ""
 "This information should have been provided by your Internet Service Provider."
 msgstr ""
@@ -91,8 +103,10 @@ msgstr ""
 #. Type: password
 #. Description
 #: ../ppp-udeb.templates:6001
+#, fuzzy
+#| msgid "PPP password:"
 msgid "ISP account password:"
-msgstr "Password dell'account del provider:"
+msgstr "Password PPP:"
 
 #. Type: password
 #. Description
@@ -103,8 +117,10 @@ msgstr "Inserire la password per la connessione PPP."
 #. Type: error
 #. Description
 #: ../ppp-udeb.templates:7001
+#, fuzzy
+#| msgid "No Ethernet interface found"
 msgid "No Ethernet interface"
-msgstr "Non ci sono interfacce Ethernet"
+msgstr "Non è stata trovata una interfaccia Ethernet"
 
 #. Type: error
 #. Description
@@ -113,7 +129,7 @@ msgid ""
 "PPPoE networking cannot be configured because no Ethernet interface was "
 "detected."
 msgstr ""
-"La connessione PPPoE non puÃ² essere configurata perchÃ© non Ã¨ stata trovata "
+"La connessione PPPoE non può essre configurata perché non è stata trovata "
 "alcuna interfaccia Ethernet."
 
 #. Type: text
@@ -131,18 +147,24 @@ msgstr "Autenticazione fallita"
 #. Type: error
 #. Description
 #: ../ppp-udeb.templates:9001
+#, fuzzy
+#| msgid ""
+#| "A PPPoE connection was attempted, but the provided login information was "
+#| "incorrect. Because of this the authentication failed."
 msgid ""
 "A PPPoE connection was attempted, but the provided login information was "
 "probably incorrect."
 msgstr ""
-"Si Ã¨ provato a connettersi con PPPoE ma probabilmente le informazioni di "
-"login fornite non sono valide."
+"Si è tentato di connettersi con PPPoE ma l'autenticazione è fallita perché "
+"le informazioni di login fornite non sono valide."
 
 #. Type: error
 #. Description
 #: ../ppp-udeb.templates:9001
+#, fuzzy
+#| msgid "Please make sure you type the correct username and password."
 msgid "Please check the username and password you provided."
-msgstr "Controllare nome utente e password forniti."
+msgstr "Assicurarsi di avere scritto username e password corretti."
 
 #. Type: error
 #. Description
@@ -154,10 +176,22 @@ msgstr "Errore non gestito"
 #. Description
 #: ../ppp-udeb.templates:10001
 msgid "An unidentified error happened while attempting to create a connection."
-msgstr "C'Ã¨ stato un errore non identificato cercando di creare una connessione"
+msgstr ""
 
 #. Type: text
 #. Description
 #: ../ppp-udeb.templates:11001
 msgid "Please wait..."
 msgstr "Attendere..."
+
+#~ msgid "PPP login:"
+#~ msgstr "Login PPP:"
+
+#~ msgid ""
+#~ "It seems that the attempt to create a connection resulted in an unhandled "
+#~ "error. Probably there is some exceptional situation which prevents "
+#~ "establishing the connection."
+#~ msgstr ""
+#~ "Sembra che il tentativo di creare una connessione abbia causato un errore "
+#~ "non gestito. Probabilmente una situazione eccezionale impedisce di "
+#~ "stabilire la connessione."

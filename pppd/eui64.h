@@ -33,14 +33,13 @@
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-#ifndef PPP_EUI64_H
-#define PPP_EUI64_H
 
-#include "pppdconf.h"
+#ifndef __EUI64_H__
+#define __EUI64_H__
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#if !defined(INET6)
+#error	"this file should only be included when INET6 is defined"
+#endif /* not defined(INET6) */
 
 #if defined(SOL2)
 #include <netinet/in.h>
@@ -110,8 +109,5 @@ typedef union
 
 char *eui64_ntoa(eui64_t);	/* Returns ascii representation of id */
 
-#ifdef __cplusplus
-}
-#endif
+#endif /* __EUI64_H__ */
 
-#endif /* PPP_EUI64_H */

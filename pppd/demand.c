@@ -1,7 +1,7 @@
 /*
  * demand.c - Support routines for demand-dialling.
  *
- * Copyright (c) 1996-2024 Paul Mackerras. All rights reserved.
+ * Copyright (c) 1996-2002 Paul Mackerras. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -10,10 +10,14 @@
  * 1. Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  *
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in
- *    the documentation and/or other materials provided with the
- *    distribution.
+ * 2. The name(s) of the authors of this software must not be used to
+ *    endorse or promote products derived from this software without
+ *    prior written permission.
+ *
+ * 3. Redistributions of any form whatsoever must retain the following
+ *    acknowledgment:
+ *    "This product includes software developed by Paul Mackerras
+ *     <paulus@samba.org>".
  *
  * THE AUTHORS OF THIS SOFTWARE DISCLAIM ALL WARRANTIES WITH REGARD TO
  * THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
@@ -24,9 +28,7 @@
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
+#define RCSID	"$Id: demand.c,v 1.20 2005/08/25 12:14:18 paulus Exp $"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -41,11 +43,11 @@
 #include <sys/resource.h>
 #include <sys/stat.h>
 #include <sys/socket.h>
-#ifdef PPP_WITH_FILTER
+#ifdef PPP_FILTER
 #include <pcap-bpf.h>
 #endif
 
-#include "pppd-private.h"
+#include "pppd.h"
 #include "fsm.h"
 #include "ipcp.h"
 #include "lcp.h"
@@ -91,12 +93,12 @@ demand_conf(void)
     flush_flag = 0;
     fcs = PPP_INITFCS;
 
-    ppp_set_mtu(0, MIN(lcp_allowoptions[0].mru, PPP_MRU));
+    netif_set_mtu(0, MIN(lcp_allowoptions[0].mru, PPP_MRU));
     if (ppp_send_config(0, PPP_MRU, (u_int32_t) 0, 0, 0) < 0
 	|| ppp_recv_config(0, PPP_MRU, (u_int32_t) 0, 0, 0) < 0)
 	    fatal("Couldn't set up demand-dialled PPP interface: %m");
 
-#ifdef PPP_WITH_FILTER
+#ifdef PPP_FILTER
     set_filters(&pass_filter, &active_filter);
 #endif
 
@@ -204,7 +206,6 @@ static u_short fcstab[256] = {
 	0xf78f,	0xe606,	0xd49d,	0xc514,	0xb1ab,	0xa022,	0x92b9,	0x8330,
 	0x7bc7,	0x6a4e,	0x58d5,	0x495c,	0x3de3,	0x2c6a,	0x1ef1,	0x0f78
 };
-#define PPP_FCS(fcs, c)	(((fcs) >> 8) ^ fcstab[((fcs) ^ (c)) & 0xff])
 
 /*
  * loop_chars - process characters received from the loopback.
@@ -331,7 +332,7 @@ active_packet(unsigned char *p, int len)
     if (len < PPP_HDRLEN)
 	return 0;
     proto = PPP_PROTOCOL(p);
-#ifdef PPP_WITH_FILTER
+#ifdef PPP_FILTER
     p[0] = 1;		/* outbound packet indicator */
     if ((pass_filter.bf_len != 0
 	 && bpf_filter(pass_filter.bf_insns, p, len, len) == 0)

@@ -14,20 +14,16 @@
 *
 */
 
+static char const RCSID[] =
+    "$Id: radrealms.c,v 1.2 2004/11/14 07:26:26 paulus Exp $";
+
+#include "pppd.h"
+#include "radiusclient.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <sys/param.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdarg.h>
-#include <sys/types.h>
 
-#include <pppd/pppd.h>
-
-#include "radiusclient.h"
-
-char pppd_version[] = PPPD_VERSION;
+char pppd_version[] = VERSION;
 
 char radrealms_config[MAXPATHLEN] = "/etc/radiusclient/realms";
 
@@ -71,7 +67,7 @@ lookup_realm(char const *user,
     }
     
     if ((fd = fopen(radrealms_config, "r")) == NULL) {
-	ppp_option_error("cannot open %s", radrealms_config);
+	option_error("cannot open %s", radrealms_config);
 	free(auths);
 	free(accts);
 	return;
@@ -91,7 +87,7 @@ lookup_realm(char const *user,
 	if (p == NULL || (strcmp(p, "authserver") !=0
 	    && strcmp(p, "acctserver"))) {
 	    fclose(fd);
-	    ppp_option_error("%s: invalid line %d: %s", radrealms_config,
+	    option_error("%s: invalid line %d: %s", radrealms_config,
 			 line, buffer);
 	    free(auths);
 	    free(accts);
@@ -107,7 +103,7 @@ lookup_realm(char const *user,
 
 	if ((p = strtok(NULL, "\t ")) == NULL) {
 	    fclose(fd);
-	    ppp_option_error("%s: realm name missing on line %d: %s",
+	    option_error("%s: realm name missing on line %d: %s",
 			 radrealms_config, line, buffer);
 	    free(auths);
 	    free(accts);
@@ -119,7 +115,7 @@ lookup_realm(char const *user,
 	    info(" - Matched realm %s", p);
 	    if ((p = strtok(NULL, ":")) == NULL) {
 		fclose(fd);
-		ppp_option_error("%s: server address missing on line %d: %s",
+		option_error("%s: server address missing on line %d: %s",
 			     radrealms_config, line, buffer);
 	        free(auths);
 	        free(accts);
@@ -129,7 +125,7 @@ lookup_realm(char const *user,
 	    info(" - Address is '%s'",p);
 	    if ((p = strtok(NULL, "\t ")) == NULL) {
 		fclose(fd);
-		ppp_option_error("%s: server port missing on line %d:  %s",
+		option_error("%s: server port missing on line %d:  %s",
 			     radrealms_config, line, buffer);
 		free(auths);
 		free(accts);
@@ -145,13 +141,9 @@ lookup_realm(char const *user,
 
     if (accts->max)
 	*acctserver = accts;
-    else
-	free(accts);
 
     if (auths->max)
 	*authserver = auths;
-    else
-	free(auths);
 
     return;
 }
@@ -161,6 +153,6 @@ plugin_init(void)
 {
     radius_pre_auth_hook = lookup_realm;
 
-    ppp_add_options(Options);
+    add_options(Options);
     info("RADIUS Realms plugin initialized.");
 }

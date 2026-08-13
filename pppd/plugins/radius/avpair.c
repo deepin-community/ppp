@@ -1,4 +1,6 @@
 /*
+ * $Id: avpair.c,v 1.1 2004/11/14 07:26:26 paulus Exp $
+ *
  * Copyright (C) 1995 Lars Fenneberg
  *
  * Copyright 1992 Livingston Enterprises, Inc.
@@ -29,7 +31,7 @@ static void rc_extract_vendor_specific_attributes(int attrlen,
  *
  */
 
-VALUE_PAIR *rc_avpair_add (VALUE_PAIR **list, int attrid, const void *pval, int len,
+VALUE_PAIR *rc_avpair_add (VALUE_PAIR **list, int attrid, void *pval, int len,
 			   int vendorcode)
 {
 	VALUE_PAIR     *vp;
@@ -55,7 +57,7 @@ VALUE_PAIR *rc_avpair_add (VALUE_PAIR **list, int attrid, const void *pval, int 
  *
  */
 
-int rc_avpair_assign (VALUE_PAIR *vp, const void *pval, int len)
+int rc_avpair_assign (VALUE_PAIR *vp, void *pval, int len)
 {
 	int	result = -1;
 
@@ -63,19 +65,19 @@ int rc_avpair_assign (VALUE_PAIR *vp, const void *pval, int len)
 	{
 		case PW_TYPE_STRING:
 
-			if (((len == 0) && (strlen ((const char *) pval)) > AUTH_STRING_LEN)
+			if (((len == 0) && (strlen ((char *) pval)) > AUTH_STRING_LEN)
 			    || (len > AUTH_STRING_LEN)) {
 				error("rc_avpair_assign: bad attribute length");
 				return result;
 		    }
 
 			if (len > 0) {
-				memcpy(vp->strvalue, (const char *)pval, len);
+				memcpy(vp->strvalue, (char *)pval, len);
 				vp->strvalue[len] = '\0';
 				vp->lvalue = len;
 			} else {
-			strncpy ((char*) vp->strvalue, (const char *) pval, AUTH_STRING_LEN);
-			vp->lvalue = strlen((const char *) pval);
+			strncpy (vp->strvalue, (char *) pval, AUTH_STRING_LEN);
+			vp->lvalue = strlen((char *) pval);
 			}
 
 			result = 0;
@@ -105,7 +107,7 @@ int rc_avpair_assign (VALUE_PAIR *vp, const void *pval, int len)
  *
  */
 
-VALUE_PAIR *rc_avpair_new (int attrid, const void *pval, int len, int vendorcode)
+VALUE_PAIR *rc_avpair_new (int attrid, void *pval, int len, int vendorcode)
 {
 	VALUE_PAIR     *vp = (VALUE_PAIR *) NULL;
 	DICT_ATTR      *pda;
@@ -159,7 +161,7 @@ VALUE_PAIR *rc_avpair_gen (AUTH_HDR *auth)
 	DICT_ATTR      *attr;
 	VALUE_PAIR     *vp;
 	VALUE_PAIR     *pair;
-	char            hex[3];		/* For hex string conversion. */
+	unsigned char   hex[3];		/* For hex string conversion. */
 	char            buffer[512];
 
 	/*
@@ -424,7 +426,7 @@ void rc_avpair_insert (VALUE_PAIR **a, VALUE_PAIR *p, VALUE_PAIR *b)
 	else /* look for the "p" entry in the "a" list (or run to end) */
 	{
 		this_node = *a;
-		while (this_node->next != (VALUE_PAIR *) NULL)
+		while (this_node != (VALUE_PAIR *) NULL)
 		{
 			if (this_node == p)
 			{
@@ -598,7 +600,7 @@ int rc_avpair_parse (char *buffer, VALUE_PAIR **first_pair)
 			{
 
 			    case PW_TYPE_STRING:
-				strcpy ((char*) pair->strvalue, valstr);
+				strcpy (pair->strvalue, valstr);
 				pair->lvalue = strlen(valstr);
 				break;
 
@@ -697,7 +699,6 @@ int rc_avpair_tostr (VALUE_PAIR *pair, char *name, int ln, char *value, int lv)
 	struct in_addr  inad;
 	unsigned char         *ptr;
 	char		*str;
-	time_t tmptime;
 
 	*name = *value = '\0';
 
@@ -724,7 +725,7 @@ int rc_avpair_tostr (VALUE_PAIR *pair, char *name, int ln, char *value, int lv)
 			}
 			else
 			{
-				strncat(value, (char*) ptr, 1);
+				strncat(value, ptr, 1);
 				lv--;
 				if (lv < 0) break;
 			}
@@ -751,9 +752,8 @@ int rc_avpair_tostr (VALUE_PAIR *pair, char *name, int ln, char *value, int lv)
 		break;
 
 	    case PW_TYPE_DATE:
-		tmptime = pair->lvalue;
 		strftime (buffer, sizeof (buffer), "%m/%d/%y %H:%M:%S",
-			  gmtime (&tmptime));
+			  gmtime ((time_t *) & pair->lvalue));
 		strncpy(value, buffer, lv-1);
 		break;
 

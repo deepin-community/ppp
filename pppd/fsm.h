@@ -38,20 +38,15 @@
  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
  * AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ * $Id: fsm.h,v 1.10 2004/11/13 02:28:15 paulus Exp $
  */
-#ifndef PPP_FSM_H
-#define PPP_FSM_H
-
-#include "pppdconf.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /*
  * Packet header = Code, id, length.
  */
 #define HEADERLEN	4
+
 
 /*
  *  CP (LCP, IPCP, etc.) codes.
@@ -73,9 +68,9 @@ typedef struct fsm {
     int protocol;		/* Data Link Layer Protocol field value */
     int state;			/* State */
     int flags;			/* Contains option bits */
-    unsigned char id;			/* Current id */
-    unsigned char reqid;		/* Current request id */
-    unsigned char seen_ack;		/* Have received valid Ack/Nak/Rej to Req */
+    u_char id;			/* Current id */
+    u_char reqid;		/* Current request id */
+    u_char seen_ack;		/* Have received valid Ack/Nak/Rej to Req */
     int timeouttime;		/* Timeout time in milliseconds */
     int maxconfreqtransmits;	/* Maximum Configure-Request transmissions */
     int retransmits;		/* Number of retransmissions left */
@@ -93,15 +88,15 @@ typedef struct fsm_callbacks {
     void (*resetci)(fsm *);	/* Reset our Configuration Information */
     int  (*cilen)(fsm *);	/* Length of our Configuration Information */
     void (*addci) 		/* Add our Configuration Information */
-		(fsm *, unsigned char *, int *);
+		(fsm *, u_char *, int *);
     int  (*ackci)		/* ACK our Configuration Information */
-		(fsm *, unsigned char *, int);
+		(fsm *, u_char *, int);
     int  (*nakci)		/* NAK our Configuration Information */
-		(fsm *, unsigned char *, int, int);
+		(fsm *, u_char *, int, int);
     int  (*rejci)		/* Reject our Configuration Information */
-		(fsm *, unsigned char *, int);
+		(fsm *, u_char *, int);
     int  (*reqci)		/* Request peer's Configuration Information */
-		(fsm *, unsigned char *, int *, int);
+		(fsm *, u_char *, int *, int);
     void (*up)(fsm *);		/* Called when fsm reaches OPENED state */
     void (*down)(fsm *);	/* Called when fsm leaves OPENED state */
     void (*starting)(fsm *);	/* Called when we want the lower layer */
@@ -109,7 +104,7 @@ typedef struct fsm_callbacks {
     void (*protreject)(int);	/* Called when Protocol-Reject received */
     void (*retransmit)(fsm *);	/* Retransmission is necessary */
     int  (*extcode)		/* Called when unknown code received */
-		(fsm *, int, int, unsigned char *, int);
+		(fsm *, int, int, u_char *, int);
     char *proto_name;		/* String name for protocol (for messages) */
 } fsm_callbacks;
 
@@ -154,18 +149,12 @@ void fsm_lowerup (fsm *);
 void fsm_lowerdown (fsm *);
 void fsm_open (fsm *);
 void fsm_close (fsm *, char *);
-void fsm_input (fsm *, unsigned char *, int);
+void fsm_input (fsm *, u_char *, int);
 void fsm_protreject (fsm *);
-void fsm_sdata (fsm *, int, int, unsigned char *, int);
+void fsm_sdata (fsm *, int, int, u_char *, int);
 
 
 /*
  * Variables
  */
 extern int peer_mru[];		/* currently negotiated peer MRU (per unit) */
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif // PPP_FSM_H

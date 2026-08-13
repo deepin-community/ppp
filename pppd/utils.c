@@ -1,7 +1,7 @@
 /*
  * utils.c - various utility functions used in pppd.
  *
- * Copyright (c) 1999-2024 Paul Mackerras. All rights reserved.
+ * Copyright (c) 1999-2002 Paul Mackerras. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -10,10 +10,14 @@
  * 1. Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  *
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in
- *    the documentation and/or other materials provided with the
- *    distribution.
+ * 2. The name(s) of the authors of this software must not be used to
+ *    endorse or promote products derived from this software without
+ *    prior written permission.
+ *
+ * 3. Redistributions of any form whatsoever must retain the following
+ *    acknowledgment:
+ *    "This product includes software developed by Paul Mackerras
+ *     <paulus@samba.org>".
  *
  * THE AUTHORS OF THIS SOFTWARE DISCLAIM ALL WARRANTIES WITH REGARD TO
  * THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
@@ -23,10 +27,6 @@
  * AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -54,17 +54,16 @@
 #include <sys/mkdev.h>
 #endif
 
-#include "pppd-private.h"
+#include "pppd.h"
 #include "fsm.h"
 #include "lcp.h"
-#include "pathnames.h"
 
 
 #if defined(SUNOS4)
 extern char *strerror();
 #endif
 
-static void logit(int, const char *, va_list);
+static void logit(int, char *, va_list);
 static void log_write(int, char *);
 static void vslp_printer(void *, char *, ...);
 static void format_packet(u_char *, int, printer_func, void *);
@@ -116,7 +115,7 @@ strlcat(char *dest, const char *src, size_t len)
  * Returns the number of chars put into buf.
  */
 int
-slprintf(char *buf, int buflen, const char *fmt, ...)
+slprintf(char *buf, int buflen, char *fmt, ...)
 {
     va_list args;
     int n;
@@ -133,15 +132,13 @@ slprintf(char *buf, int buflen, const char *fmt, ...)
 #define OUTCHAR(c)	(buflen > 0? (--buflen, *buf++ = (c)): 0)
 
 int
-vslprintf(char *buf, int buflen, const char *fmt, va_list args)
+vslprintf(char *buf, int buflen, char *fmt, va_list args)
 {
     int c, i, n;
     int width, prec, fillch;
     int base, len, neg, quoted;
-    long long lval = 0;
-    unsigned long long val = 0;
-    char *str, *buf0;
-    const char *f;
+    unsigned long val = 0;
+    char *str, *f, *buf0;
     unsigned char *p;
     char num[32];
     time_t t;
@@ -204,37 +201,12 @@ vslprintf(char *buf, int buflen, const char *fmt, va_list args)
 	case 'l':
 	    c = *fmt++;
 	    switch (c) {
-	    case 'l':
-		c = *fmt++;
-		switch (c) {
-		case 'd':
-		    lval = va_arg(args, long long);
-		    if (lval < 0) {
-			neg = 1;
-			val = -lval;
-		    } else
-			val = lval;
-		    base = 10;
-		    break;
-		case 'u':
-		    val = va_arg(args, unsigned long long);
-		    base = 10;
-		    break;
-		default:
-		    OUTCHAR('%');
-		    OUTCHAR('l');
-		    OUTCHAR('l');
-		    --fmt;		/* so %llz outputs %llz etc. */
-		    continue;
-		}
-		break;
 	    case 'd':
-		lval = va_arg(args, long);
-		if (lval < 0) {
+		val = va_arg(args, long);
+		if (val < 0) {
 		    neg = 1;
-		    val = -lval;
-	        } else
-		    val = lval;
+		    val = -val;
+		}
 		base = 10;
 		break;
 	    case 'u':
@@ -351,7 +323,6 @@ vslprintf(char *buf, int buflen, const char *fmt, va_list args)
 		    OUTCHAR(c);
 	    }
 	    continue;
-#ifndef UNIT_TEST
 	case 'P':		/* print PPP packet */
 	    bufinfo.ptr = buf;
 	    bufinfo.len = buflen + 1;
@@ -361,7 +332,6 @@ vslprintf(char *buf, int buflen, const char *fmt, va_list args)
 	    buf = bufinfo.ptr;
 	    buflen = bufinfo.len - 1;
 	    continue;
-#endif
 	case 'B':
 	    p = va_arg(args, unsigned char *);
 	    for (n = prec; n > 0; --n) {
@@ -456,7 +426,6 @@ log_packet(u_char *p, int len, char *prefix, int level)
 }
 #endif /* unused */
 
-#ifndef UNIT_TEST
 /*
  * format_packet - make a readable representation of a packet,
  * calling `printer(arg, format, ...)' to output it.
@@ -502,7 +471,6 @@ format_packet(u_char *p, int len, printer_func printer, void *arg)
     else
 	printer(arg, "%.*B", len, p);
 }
-#endif  /* UNIT_TEST */
 
 /*
  * init_pr_log, end_pr_log - initialize and finish use of pr_log.
@@ -621,7 +589,7 @@ print_string(char *p, int len, printer_func printer, void *arg)
  * logit - does the hard work for fatal et al.
  */
 static void
-logit(int level, const char *fmt, va_list args)
+logit(int level, char *fmt, va_list args)
 {
     char buf[1024];
 
@@ -629,7 +597,6 @@ logit(int level, const char *fmt, va_list args)
     log_write(level, buf);
 }
 
-#ifndef UNIT_TEST
 static void
 log_write(int level, char *buf)
 {
@@ -644,19 +611,12 @@ log_write(int level, char *buf)
 	    log_to_fd = -1;
     }
 }
-#else
-static void
-log_write(int level, char *buf)
-{
-    printf("<%d>: %s\n", level, buf);
-}
-#endif
 
 /*
  * fatal - log an error message and die horribly.
  */
 void
-fatal(const char *fmt, ...)
+fatal(char *fmt, ...)
 {
     va_list pvar;
 
@@ -665,18 +625,14 @@ fatal(const char *fmt, ...)
     logit(LOG_ERR, fmt, pvar);
     va_end(pvar);
 
-#ifndef UNIT_TEST
     die(1);			/* as promised */
-#else
-    exit(-1);
-#endif
 }
 
 /*
  * error - log an error message.
  */
 void
-error(const char *fmt, ...)
+error(char *fmt, ...)
 {
     va_list pvar;
 
@@ -691,7 +647,7 @@ error(const char *fmt, ...)
  * warn - log a warning message.
  */
 void
-warn(const char *fmt, ...)
+warn(char *fmt, ...)
 {
     va_list pvar;
 
@@ -705,7 +661,7 @@ warn(const char *fmt, ...)
  * notice - log a notice-level message.
  */
 void
-notice(const char *fmt, ...)
+notice(char *fmt, ...)
 {
     va_list pvar;
 
@@ -719,7 +675,7 @@ notice(const char *fmt, ...)
  * info - log an informational message.
  */
 void
-info(const char *fmt, ...)
+info(char *fmt, ...)
 {
     va_list pvar;
 
@@ -733,7 +689,7 @@ info(const char *fmt, ...)
  * dbglog - log a debug message.
  */
 void
-dbglog(const char *fmt, ...)
+dbglog(char *fmt, ...)
 {
     va_list pvar;
 
@@ -773,8 +729,6 @@ dump_packet(const char *tag, unsigned char *p, int len)
     dbglog("%s %P", tag, p, len);
 }
 
-
-#ifndef UNIT_TEST
 /*
  * complete_read - read a full `count' bytes from fd,
  * unless end-of-file or an error other than EINTR is encountered.
@@ -789,7 +743,7 @@ complete_read(int fd, void *buf, size_t count)
 	for (done = 0; done < count; ) {
 		nb = read(fd, ptr, count - done);
 		if (nb < 0) {
-			if (errno == EINTR && !ppp_signaled(SIGTERM))
+			if (errno == EINTR && !got_sigterm)
 				continue;
 			return -1;
 		}
@@ -800,91 +754,20 @@ complete_read(int fd, void *buf, size_t count)
 	}
 	return done;
 }
-#endif
-
-/*
- * mkdir_check - helper for mkdir_recursive, creates a directory
- * but do not error on EEXIST if and only if entry is a directory
- * The caller must check for errno == ENOENT if appropriate.
- */
-static int
-mkdir_check(const char *path)
-{
-    struct stat statbuf;
-
-    if (mkdir(path, 0755) >= 0)
-	return 0;
-
-    if (errno == EEXIST) {
-	if (stat(path, &statbuf) < 0)
-	    /* got raced? */
-	    return -1;
-
-	if ((statbuf.st_mode & S_IFMT) == S_IFDIR)
-	    return 0;
-
-	/* already exists but not a dir, treat as failure */
-	errno = EEXIST;
-	return -1;
-    }
-
-    return -1;
-}
-
-/*
- * mkdir_parent - helper for mkdir_recursive, modifies the string in place
- * Assumes mkdir(path) already failed, so it first creates the parent then
- * full path again.
- */
-static int
-mkdir_parent(char *path)
-{
-    char *slash;
-    int rc;
-
-    slash = strrchr(path, '/');
-    if (!slash)
-	return -1;
-
-    *slash = 0;
-    if (mkdir_check(path) < 0) {
-	if (errno != ENOENT) {
-	    *slash = '/';
-	    return -1;
-	}
-	if (mkdir_parent(path) < 0) {
-	    *slash = '/';
-	    return -1;
-	}
-    }
-    *slash = '/';
-
-    return mkdir_check(path);
-}
-
-/*
- * mkdir_recursive - recursively create directory if it didn't exist
- */
-int
-mkdir_recursive(const char *path)
-{
-    char *copy;
-    int rc;
-
-    // optimistically try on full path first to avoid allocation
-    if (mkdir_check(path) == 0)
-	return 0;
-
-    copy = strdup(path);
-    if (!copy)
-	return -1;
-
-    rc = mkdir_parent(copy);
-    free(copy);
-    return rc;
-}
 
 /* Procedures for locking the serial device using a lock file. */
+#ifndef LOCK_DIR
+#ifdef __linux__
+#define LOCK_DIR	"/var/lock"
+#else
+#ifdef SVR4
+#define LOCK_DIR	"/var/spool/locks"
+#else
+#define LOCK_DIR	"/var/spool/lock"
+#endif
+#endif
+#endif /* LOCK_DIR */
+
 static char lock_file[MAXPATHLEN];
 
 /*
@@ -911,7 +794,7 @@ lock(char *dev)
 #else /* LOCKLIB */
 
     char lock_buffer[12];
-    int fd, pid, n, siz;
+    int fd, pid, n;
 
 #ifdef SVR4
     struct stat sbuf;
@@ -925,7 +808,7 @@ lock(char *dev)
 	return -1;
     }
     slprintf(lock_file, sizeof(lock_file), "%s/LK.%03d.%03d.%03d",
-	     PPP_PATH_LOCKDIR, major(sbuf.st_dev),
+	     LOCK_DIR, major(sbuf.st_dev),
 	     major(sbuf.st_rdev), minor(sbuf.st_rdev));
 #else
     char *p;
@@ -943,7 +826,7 @@ lock(char *dev)
 	if ((p = strrchr(dev, '/')) != NULL)
 	    dev = p + 1;
 
-    slprintf(lock_file, sizeof(lock_file), "%s/LCK..%s", PPP_PATH_LOCKDIR, dev);
+    slprintf(lock_file, sizeof(lock_file), "%s/LCK..%s", LOCK_DIR, dev);
 #endif
 
     while ((fd = open(lock_file, O_EXCL | O_CREAT | O_RDWR, 0644)) < 0) {
@@ -998,16 +881,11 @@ lock(char *dev)
 
     pid = getpid();
 #ifndef LOCK_BINARY
-    siz = 11;
     slprintf(lock_buffer, sizeof(lock_buffer), "%10d\n", pid);
-    n = write (fd, lock_buffer, siz);
+    write (fd, lock_buffer, 11);
 #else
-    siz = sizeof (pid);
-    n = write(fd, &pid, siz);
+    write(fd, &pid, sizeof (pid));
 #endif
-    if (n != siz) {
-	error("Could not write pid to lock file when locking");
-    }
     close(fd);
     return 0;
 
@@ -1031,7 +909,7 @@ relock(int pid)
     return -1;
 #else /* LOCKLIB */
 
-    int fd, n, siz;
+    int fd;
     char lock_buffer[12];
 
     if (lock_file[0] == 0)
@@ -1044,16 +922,11 @@ relock(int pid)
     }
 
 #ifndef LOCK_BINARY
-    siz = 11;
     slprintf(lock_buffer, sizeof(lock_buffer), "%10d\n", pid);
-    n = write (fd, lock_buffer, siz);
+    write (fd, lock_buffer, 11);
 #else
-    siz = sizeof(pid);
-    n = write(fd, &pid, siz);
+    write(fd, &pid, sizeof(pid));
 #endif /* LOCK_BINARY */
-    if (n != siz) {
-	error("Could not write pid to lock file when locking");
-    }
     close(fd);
     return 0;
 
