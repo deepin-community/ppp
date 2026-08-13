@@ -1,4 +1,6 @@
 /*
+ * $Id: buildreq.c,v 1.1 2004/11/14 07:26:26 paulus Exp $
+ *
  * Copyright (C) 1995,1997 Lars Fenneberg
  *
  * See the file COPYRIGHT for the respective terms and conditions.
@@ -92,7 +94,7 @@ unsigned char rc_get_seqnbr(void)
 {
 	FILE *sf;
 	int tries = 1;
-	int seq_nbr, pos, ret;
+	int seq_nbr, pos;
 	char *seqfile = rc_conf_str("seqfile");
 
 	if ((sf = fopen(seqfile, "a+")) == NULL)
@@ -133,10 +135,7 @@ unsigned char rc_get_seqnbr(void)
 	}
 
 	rewind(sf);
-	ret = ftruncate(fileno(sf),0);
-	if (ret != 0) {
-		error("rc_get_seqnbr: couldn't truncate sequence file, %m");
-	}
+	ftruncate(fileno(sf),0);
 	fprintf(sf,"%d\n", (seq_nbr+1) & UCHAR_MAX);
 
 	fflush(sf); /* fflush because a process may read it between the do_unlock and fclose */
@@ -325,7 +324,7 @@ int rc_acct_using_server(SERVER *acctserver,
 	if ((adt_vp = rc_avpair_add(&(data.send_pairs), PW_ACCT_DELAY_TIME, &dtime.tv_sec, 0, VENDOR_NONE)) == NULL)
 		return (ERROR_RC);
 
-	ppp_get_time(&start_time);
+	get_time(&start_time);
 	result = ERROR_RC;
 	for(i=0; (i<acctserver->max) && (result != OK_RC) && (result != BADRESP_RC)
 		; i++)
@@ -337,7 +336,7 @@ int rc_acct_using_server(SERVER *acctserver,
 		rc_buildreq(&data, PW_ACCOUNTING_REQUEST, acctserver->name[i],
 			    acctserver->port[i], timeout, retries);
 
-		ppp_get_time(&dtime);
+		get_time(&dtime);
 		dtime.tv_sec -= start_time.tv_sec;
 		rc_avpair_assign(adt_vp, &dtime.tv_sec, 0);
 

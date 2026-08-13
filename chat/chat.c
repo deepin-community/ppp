@@ -1,31 +1,6 @@
-/* SPDX-License-Identifier: MIT */
 /*
  *	Chat -- a program for automatic session establishment (i.e. dial
  *		the phone and log in).
- *
- * This version is Copyright 1995-2024 Paul Mackerras <paulus@ozlabs.org>
- * based on the original public-domain version by Karl Fox.
- *
- * Permission is hereby granted, free of charge, to any person
- * obtaining a copy of this software and associated documentation
- * files (the “Software”), to deal in the Software without
- * restriction, including without limitation the rights to use, copy,
- * modify, merge, publish, distribute, sublicense, and/or sell copies
- * of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be
- * included in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
- * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
- * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
- * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- *
  *
  * Standard termination codes:
  *  0 - successful completion of the script
@@ -36,6 +11,7 @@
  *  5 - the second string declared as "ABORT"
  *  6 - ... and so on for successive ABORT strings.
  *
+ *	This software is in the public domain.
  *
  * -----------------
  *	22-May-99 added environment substitutuion, enabled with -E switch.
@@ -206,7 +182,7 @@ int n_aborts = 0, abort_next = 0, timeout_next = 0, echo_next = 0;
 int clear_abort_next = 0;
 
 char *report_string[MAX_REPORTS] ;
-char  report_buffer[4096] ;
+char  report_buffer[256] ;
 int n_reports = 0, report_next = 0, report_gathering = 0 ; 
 int clear_report_next = 0;
 
@@ -222,10 +198,10 @@ SIGTYPE sigalrm (int signo);
 SIGTYPE sigint (int signo);
 SIGTYPE sigterm (int signo);
 SIGTYPE sighup (int signo);
-void checksigs(void);
+void unalarm (void);
 void init (void);
 void set_tty_parameters (void);
-int  echo_stderr (int);
+void echo_stderr (int);
 void break_sequence (void);
 void terminate (int status);
 void do_file (char *chat_file);
@@ -234,11 +210,12 @@ int  put_string (register char *s);
 int  write_char (int c);
 int  put_char (int c);
 int  get_char (void);
-int  chat_send (register char *s);
+void chat_send (register char *s);
 char *character (int c);
 void chat_expect (register char *s);
 char *clean (register char *s, int sending);
 void break_sequence (void);
+void terminate (int status);
 void pack_array (char **array, int end);
 char *expect_strtok (char *, char *);
 int vfmtmsg (char *, int, const char *, va_list);	/* vsprintf++ */
@@ -370,12 +347,16 @@ main(int argc, char **argv)
 	report_fp = stderr;
 
     if (to_log) {
+#ifdef ultrix
+	openlog("chat", LOG_PID);
+#else
 	openlog("chat", LOG_PID | LOG_NDELAY, LOG_LOCAL2);
 
 	if (verbose)
 	    setlogmask(LOG_UPTO(LOG_INFO));
 	else
 	    setlogmask(LOG_UPTO(LOG_WARNING));
+#endif
     }
 
     init();
@@ -392,7 +373,6 @@ main(int argc, char **argv)
 
 	    if ((arg = ARG(argc, argv)) != NULL)
 		chat_send(arg);
-	    checksigs();
 	}
     }
 
@@ -464,10 +444,8 @@ void do_file (char *chat_file)
 	    else
 		chat_expect (arg);
 	    sendflg = !sendflg;
-	    checksigs();
 	}
     }
-    checksigs();
     fclose (cfp);
 }
 
@@ -521,68 +499,59 @@ void fatal(int code, const char *fmt, ...)
 }
 
 int alarmed = 0;
-int alarmsig = 0;
 
 SIGTYPE sigalrm(int signo)
 {
     int flags;
 
     alarm(1);
-    alarmed = 1;
-    alarmsig = 1;
+    alarmed = 1;		/* Reset alarm to avoid race window */
+    signal(SIGALRM, sigalrm);	/* that can cause hanging in read() */
+
+    if ((flags = fcntl(0, F_GETFL, 0)) == -1)
+	fatal(2, "Can't get file mode flags on stdin: %m");
+
+    if (fcntl(0, F_SETFL, flags | O_NONBLOCK) == -1)
+	fatal(2, "Can't set file mode flags on stdin: %m");
+
+    if (verbose)
+	msgf("alarm");
 }
 
-const char *fatalsig = NULL;
+void unalarm(void)
+{
+    int flags;
+
+    if ((flags = fcntl(0, F_GETFL, 0)) == -1)
+	fatal(2, "Can't get file mode flags on stdin: %m");
+
+    if (fcntl(0, F_SETFL, flags & ~O_NONBLOCK) == -1)
+	fatal(2, "Can't set file mode flags on stdin: %m");
+}
 
 SIGTYPE sigint(int signo)
 {
-    fatalsig = "SIGINT";
+    fatal(2, "SIGINT");
 }
 
 SIGTYPE sigterm(int signo)
 {
-    fatalsig = "SIGTERM";
+    fatal(2, "SIGTERM");
 }
 
 SIGTYPE sighup(int signo)
 {
-    fatalsig = "SIGHUP";
-}
-
-void checksigs(void)
-{
-    int err;
-    const char *signame;
-
-    if (fatalsig) {
-	signame = fatalsig;
-	fatalsig = NULL;
-	alarmsig = 0;
-	fatal(2, signame);
-    }
-    if (alarmsig && verbose) {
-	err = errno;
-	msgf("alarm");
-	errno = err;
-	alarmsig = 0;
-    }
+    fatal(2, "SIGHUP");
 }
 
 void init(void)
 {
-    struct sigaction sa;
-
-    memset(&sa, 0, sizeof(sa));
-    sa.sa_handler = sigint;
-    sigaction(SIGINT, &sa, NULL);
-    sa.sa_handler = sigterm;
-    sigaction(SIGTERM, &sa, NULL);
-    sa.sa_handler = sighup;
-    sigaction(SIGHUP, &sa, NULL);
+    signal(SIGINT, sigint);
+    signal(SIGTERM, sigterm);
+    signal(SIGHUP, sighup);
 
     set_tty_parameters();
-    sa.sa_handler = sigalrm;
-    sigaction(SIGALRM, &sa, NULL);
+    signal(SIGALRM, sigalrm);
     alarm(0);
     alarmed = 0;
 }
@@ -633,7 +602,7 @@ void terminate(int status)
 	int c, rep_len;
 
 	rep_len = strlen(report_buffer);
-	while (rep_len + 1 < sizeof(report_buffer)) {
+	while (rep_len + 1 <= sizeof(report_buffer)) {
 	    alarm(1);
 	    c = get_char();
 	    alarm(0);
@@ -976,7 +945,6 @@ void chat_expect (char *s)
 	    break;
 
 	chat_send (reply);
-	checksigs();
     }
 
 /*
@@ -1015,37 +983,31 @@ char *character(int c)
 /*
  *  process the reply string
  */
-int chat_send (register char *s)
+void chat_send (register char *s)
 {
     char file_data[STR_LEN];
-    int len, ret = 0;
-    struct sigaction sa;
 
     if (say_next) {
 	say_next = 0;
 	s = clean(s, 1);
-	len = strlen(s);
-	ret = write(2, s, len) != len;
+	write(2, s, strlen(s));
         free(s);
-	return ret;
+	return;
     }
 
     if (hup_next) {
         hup_next = 0;
-	memset(&sa, 0, sizeof(sa));
-
 	if (strcmp(s, "OFF") == 0)
-	    sa.sa_handler = SIG_IGN;
+           signal(SIGHUP, SIG_IGN);
         else
-	    sa.sa_handler = sighup;
-	sigaction(SIGHUP, &sa, NULL);
-        return 0;
+           signal(SIGHUP, sighup);
+        return;
     }
 
     if (echo_next) {
 	echo_next = 0;
 	echo = (strcmp(s, "ON") == 0);
-	return 0;
+	return;
     }
 
     if (abort_next) {
@@ -1058,14 +1020,15 @@ int chat_send (register char *s)
 	
 	s1 = clean(s, 0);
 	
-	if (strlen(s1) + 1 > sizeof(fail_buffer))
+	if (strlen(s1) > strlen(s)
+	    || strlen(s1) + 1 > sizeof(fail_buffer))
 	    fatal(1, "Illegal or too-long ABORT string ('%v')", s);
 
 	abort_string[n_aborts++] = s1;
 
 	if (verbose)
-	    msgf("abort on (%v)", s1);
-	return 0;
+	    msgf("abort on (%v)", s);
+	return;
     }
 
     if (clear_abort_next) {
@@ -1078,7 +1041,8 @@ int chat_send (register char *s)
 	
 	s1 = clean(s, 0);
 	
-	if (strlen(s1) + 1 > sizeof(fail_buffer))
+	if (strlen(s1) > strlen(s)
+	    || strlen(s1) + 1 > sizeof(fail_buffer))
 	    fatal(1, "Illegal or too-long CLR_ABORT string ('%v')", s);
 
         old_max = n_aborts;
@@ -1089,13 +1053,13 @@ int chat_send (register char *s)
 		pack++;
 		n_aborts--;
 		if (verbose)
-		    msgf("clear abort on (%v)", s1);
+		    msgf("clear abort on (%v)", s);
 	    }
 	}
         free(s1);
 	if (pack)
 	    pack_array(abort_string,old_max);
-	return 0;
+	return;
     }
 
     if (report_next) {
@@ -1106,14 +1070,15 @@ int chat_send (register char *s)
 	    fatal(2, "Too many REPORT strings");
 	
 	s1 = clean(s, 0);
-	if (strlen(s1) + 1 > sizeof(fail_buffer))
+	if (strlen(s1) > strlen(s)
+	    || strlen(s1) + 1 > sizeof(fail_buffer))
 	    fatal(1, "Illegal or too-long REPORT string ('%v')", s);
 	
 	report_string[n_reports++] = s1;
 	
 	if (verbose)
-	    msgf("report (%v)", s1);
-	return 0;
+	    msgf("report (%v)", s);
+	return;
     }
 
     if (clear_report_next) {
@@ -1126,7 +1091,8 @@ int chat_send (register char *s)
 	
 	s1 = clean(s, 0);
 	
-	if (strlen(s1) + 1 > sizeof(fail_buffer))
+	if (strlen(s1) > strlen(s)
+	    || strlen(s1) + 1 > sizeof(fail_buffer))
 	    fatal(1, "Illegal or too-long REPORT string ('%v')", s);
 
 	old_max = n_reports;
@@ -1137,14 +1103,14 @@ int chat_send (register char *s)
 		pack++;
 		n_reports--;
 		if (verbose)
-		    msgf("clear report (%v)", s1);
+		    msgf("clear report (%v)", s);
 	    }
 	}
         free(s1);
         if (pack)
 	    pack_array(report_string,old_max);
 	
-	return 0;
+	return;
     }
 
     if (timeout_next) {
@@ -1157,8 +1123,8 @@ int chat_send (register char *s)
 
 	if (verbose)
 	    msgf("timeout set to %d seconds", timeout);
-	free(s);
-	return 0;
+
+	return;
     }
 
     /*
@@ -1205,8 +1171,6 @@ int chat_send (register char *s)
 
     if (!put_string(s))
 	fatal(1, "Failed");
-
-    return 0;
 }
 
 int get_char(void)
@@ -1215,7 +1179,6 @@ int get_char(void)
     char c;
 
     status = read(0, &c, 1);
-    checksigs();
 
     switch (status) {
     case 1:
@@ -1225,6 +1188,12 @@ int get_char(void)
 	msgf("warning: read() on stdin returned %d", status);
 
     case -1:
+	if ((status = fcntl(0, F_GETFL, 0)) == -1)
+	    fatal(2, "Can't get file mode flags on stdin: %m");
+
+	if (fcntl(0, F_SETFL, status & ~O_NONBLOCK) == -1)
+	    fatal(2, "Can't set file mode flags on stdin: %m");
+	
 	return (-1);
     }
 }
@@ -1235,10 +1204,8 @@ int put_char(int c)
     char ch = c;
 
     usleep(10000);		/* inter-character typing delay (?) */
-    checksigs();
 
     status = write(1, &ch, 1);
-    checksigs();
 
     switch (status) {
     case 1:
@@ -1248,6 +1215,12 @@ int put_char(int c)
 	msgf("warning: write() on stdout returned %d", status);
 	
     case -1:
+	if ((status = fcntl(0, F_GETFL, 0)) == -1)
+	    fatal(2, "Can't get file mode flags on stdin, %m");
+
+	if (fcntl(0, F_SETFL, status & ~O_NONBLOCK) == -1)
+	    fatal(2, "Can't set file mode flags on stdin: %m");
+	
 	return (-1);
     }
 }
@@ -1271,11 +1244,8 @@ int write_char(int c)
 
 int put_string(register char *s)
 {
-    char *s1;
     quiet = 0;
-
     s = clean(s, 1);
-    s1 = s;
 
     if (verbose) {
 	if (quiet)
@@ -1290,10 +1260,8 @@ int put_string(register char *s)
 	register char c = *s++;
 
 	if (c != '\\') {
-	    if (!write_char (c)) {
-		free(s1);
+	    if (!write_char (c))
 		return 0;
-	    }
 	    continue;
 	}
 
@@ -1312,18 +1280,14 @@ int put_string(register char *s)
 	    break;
 
 	default:
-	    if (!write_char (c)) {
-		free(s1);
+	    if (!write_char (c))
 		return 0;
-	    }
 	    break;
 	}
-	checksigs();
     }
 
     alarm(0);
     alarmed = 0;
-    free(s1);
     return (1);
 }
 
@@ -1332,11 +1296,10 @@ int put_string(register char *s)
  *	When called with -1, a '\n' character is generated when
  *	the cursor is not at the beginning of a line.
  */
-int echo_stderr(int n)
+void echo_stderr(int n)
 {
     static int need_lf;
     char *s;
-    int len, ret = 0;
 
     switch (n) {
     case '\r':		/* ignore '\r' */
@@ -1346,18 +1309,15 @@ int echo_stderr(int n)
 	    break;
 	/* fall through */
     case '\n':
-	ret = write(2, "\n", 1) != 1;
+	write(2, "\n", 1);
 	need_lf = 0;
 	break;
     default:
 	s = character(n);
-	len = strlen(s);
-	ret = write(2, s, len) != len;
+	write(2, s, strlen(s));
 	need_lf = 1;
 	break;
     }
-    checksigs();
-    return ret;
 }
 
 /*
@@ -1368,10 +1328,10 @@ int get_string(register char *string)
     char temp[STR_LEN];
     int c, printed = 0, len, minlen;
     register char *s = temp, *end = s + STR_LEN;
-    char *s1, *logged = temp;
+    char *logged = temp;
 
     fail_reason = (char *)0;
-    string = s1 = clean(string, 0);
+    string = clean(string, 0);
     len = strlen(string);
     minlen = (len > sizeof(fail_buffer)? len: sizeof(fail_buffer)) - 1;
 
@@ -1381,14 +1341,12 @@ int get_string(register char *string)
     if (len > STR_LEN) {
 	msgf("expect string is too long");
 	exit_code = 1;
-	free(s1);
 	return 0;
     }
 
     if (len == 0) {
 	if (verbose)
 	    msgf("got it");
-	free(s1);
 	return (1);
     }
 
@@ -1398,11 +1356,8 @@ int get_string(register char *string)
     while ( ! alarmed && (c = get_char()) >= 0) {
 	int n, abort_len, report_len;
 
-	if (echo) {
-	    if (echo_stderr(c) != 0) {
-		fatal(2, "Could not write to stderr, %m");
-	    }
-	}
+	if (echo)
+	    echo_stderr(c);
 	if (verbose && c == '\n') {
 	    if (s == logged)
 		msgf("");	/* blank line */
@@ -1436,7 +1391,6 @@ int get_string(register char *string)
 		    strftime (report_buffer, 20, "%b %d %H:%M:%S ", tm_now);
 		    strcat (report_buffer, report_string[n]);
 
-		    free(report_string[n]);
 		    report_string[n] = (char *) NULL;
 		    report_gathering = 1;
 		    break;
@@ -1446,10 +1400,8 @@ int get_string(register char *string)
 	else {
 	    if (!iscntrl (c)) {
 		int rep_len = strlen (report_buffer);
-		if ((rep_len + 1) < sizeof(report_buffer)) {
-		    report_buffer[rep_len]     = c;
-		    report_buffer[rep_len + 1] = '\0';
-		}
+		report_buffer[rep_len]     = c;
+		report_buffer[rep_len + 1] = '\0';
 	    }
 	    else {
 		report_gathering = 0;
@@ -1468,7 +1420,6 @@ int get_string(register char *string)
 
 	    alarm(0);
 	    alarmed = 0;
-	    free(s1);
 	    return (1);
 	}
 
@@ -1485,7 +1436,6 @@ int get_string(register char *string)
 		alarmed = 0;
 		exit_code = n + 4;
 		strcpy(fail_reason = fail_buffer, abort_string[n]);
-		free(s1);
 		return (0);
 	    }
 	}
@@ -1517,7 +1467,6 @@ int get_string(register char *string)
 
     exit_code = 3;
     alarmed   = 0;
-    free(s1);
     return (0);
 }
 

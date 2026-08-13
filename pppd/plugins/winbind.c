@@ -7,10 +7,9 @@
 * 
 * Based on the structure of the radius module.
 *
-* Copyright 1999-2024 Paul Mackerras <paulus@ozlabs.org>
 * Copyright (C) 2003 Andrew Bartlet <abartlet@samba.org>
 *
-* Copyright 1999 Alan Curry.
+* Copyright 1999 Paul Mackerras, Alan Curry. 
 * (pipe read code from passpromt.c)
 *
 * Copyright (C) 2002 Roaring Penguin Software Inc.
@@ -35,6 +34,14 @@
 *
 ***********************************************************************/
 
+#include "pppd.h"
+#include "chap-new.h"
+#include "chap_ms.h"
+#ifdef MPPE
+#include "md5.h"
+#endif
+#include "fsm.h"
+#include "ipcp.h"
 #include <syslog.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -46,20 +53,6 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <ctype.h>
-#include <stdbool.h>
-#include <stdarg.h>
-#include <stdint.h>
-#include <stdio.h>
-
-#include <pppd/pppd.h>
-#include <pppd/options.h>
-#include <pppd/chap.h>
-#include <pppd/chap_ms.h>
-#include <pppd/upap.h>
-#include <pppd/fsm.h>
-#include <pppd/ipcp.h>
-#include <pppd/mppe.h>
-#include <pppd/crypto.h>
 
 #define BUF_LEN 1024
 
@@ -74,7 +67,7 @@ static int set_ntlm_auth(char **argv)
 
 	p = argv[0];
 	if (p[0] != '/') {
-		ppp_option_error("ntlm_auth-helper argument must be full path");
+		option_error("ntlm_auth-helper argument must be full path");
 		return 0;
 	}
 	p = strdup(p);
@@ -88,18 +81,28 @@ static int set_ntlm_auth(char **argv)
 	return 1;
 }
 
-static struct option Options[] = {
+static option_t Options[] = {
 	{ "ntlm_auth-helper", o_special, (void *) &set_ntlm_auth,
 	  "Path to ntlm_auth executable", OPT_PRIV },
 	{ NULL }
 };
 
-static pap_check_hook_fn winbind_secret_check;
-static pap_auth_hook_fn winbind_pap_auth;
-static chap_verify_hook_fn winbind_chap_verify;
-static int winbind_allowed_address(uint32_t addr);
+static int
+winbind_secret_check(void);
 
-char pppd_version[] = PPPD_VERSION;
+static int winbind_pap_auth(char *user,
+			   char *passwd,
+			   char **msgp,
+			   struct wordlist **paddrs,
+			   struct wordlist **popts);
+static int winbind_chap_verify(char *user, char *ourname, int id,
+			       struct chap_digest_type *digest,
+			       unsigned char *challenge,
+			       unsigned char *response,
+			       char *message, int message_space);
+static int winbind_allowed_address(u_int32_t addr); 
+
+char pppd_version[] = VERSION;
 
 /**********************************************************************
 * %FUNCTION: plugin_init
@@ -124,7 +127,7 @@ plugin_init(void)
     /* Don't ask the peer for anything other than MS-CHAP or MS-CHAP V2 */
     chap_mdtype_all &= (MDTYPE_MICROSOFT_V2 | MDTYPE_MICROSOFT);
     
-    ppp_add_options(Options);
+    add_options(Options);
 
     info("WINBIND plugin initialized.");
 }
@@ -162,7 +165,7 @@ plugin_init(void)
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-size_t strhex_to_str(unsigned char *p, size_t len, const char *strhex)
+size_t strhex_to_str(char *p, size_t len, const char *strhex)
 {
 	size_t i;
 	size_t num_chars = 0;
@@ -282,7 +285,7 @@ unsigned int run_ntlm_auth(const char *username,
 		return NOT_AUTHENTICATED;
         }
 
-        forkret = ppp_safe_fork(child_in[0], child_out[1], 2);
+        forkret = safe_fork(child_in[0], child_out[1], 2);
         if (forkret == -1) {
 		if (error_string) {
 			*error_string = strdup("fork failed!");
@@ -294,20 +297,15 @@ unsigned int run_ntlm_auth(const char *username,
 	if (forkret == 0) {
 		/* child process */
 		uid_t uid;
-		gid_t gid;
 
 		close(child_out[0]);
 		close(child_in[1]);
 
 		/* run winbind as the user that invoked pppd */
-		gid = getgid();
-		if (setgid(gid) == -1 || getgid() != gid) {
-			fatal("pppd/winbind: could not setgid to %d: %m", gid);
-		}
+		setgid(getgid());
 		uid = getuid();
-		if (setuid(uid) == -1 || getuid() != uid) {
+		if (setuid(uid) == -1 || getuid() != uid)
 			fatal("pppd/winbind: could not setuid to %d: %m", uid);
-		}
 		execl("/bin/sh", "sh", "-c", ntlm_auth, NULL);  
 		fatal("pppd/winbind: could not exec /bin/sh: %m");
 	}
@@ -433,19 +431,19 @@ unsigned int run_ntlm_auth(const char *username,
 	}
 
         /* parent */
-        if (fclose(pipe_out) == -1) {
-                fclose(pipe_in);
+        if (close(child_out[0]) == -1) {
+                close(child_in[1]);
                 notice("error closing pipe?!? for child OUT[0]");
                 return NOT_AUTHENTICATED;
         }
 
        /* parent */
-        if (fclose(pipe_in) == -1) {
+        if (close(child_in[1]) == -1) {
                 notice("error closing pipe?!? for child IN[1]");
                 return NOT_AUTHENTICATED;
         }
 
-	while ((wait(&status) == -1) && errno == EINTR && !ppp_signaled(SIGTERM))
+	while ((wait(&status) == -1) && errno == EINTR && !got_sigterm)
                 ;
 
 	if ((authenticated == AUTHENTICATED) && nt_key && !got_user_session_key) {
@@ -520,9 +518,9 @@ winbind_chap_verify(char *user, char *ourname, int id,
 	int challenge_len, response_len;
 	char domainname[256];
 	char *domain;
-	const char *username;
+	char *username;
 	char *p;
-	unsigned char saresponse[MS_AUTH_RESPONSE_LENGTH+1];
+	char saresponse[MS_AUTH_RESPONSE_LENGTH+1];
 
 	/* The first byte of each of these strings contains their length */
 	challenge_len = *challenge++;
@@ -554,7 +552,7 @@ winbind_chap_verify(char *user, char *ourname, int id,
 		u_char *lm_response = NULL;
 		int nt_response_size = 0;
 		int lm_response_size = 0;
-		u_char session_key[MD4_DIGEST_LENGTH];
+		u_char session_key[16];
 		
 		if (response_len != MS_CHAP_RESPONSE_LEN)
 			break;			/* not even the right length */
@@ -564,14 +562,14 @@ winbind_chap_verify(char *user, char *ourname, int id,
 			nt_response = &response[MS_CHAP_NTRESP];
 			nt_response_size = MS_CHAP_NTRESP_LEN;
 		} else {
-#ifdef PPP_WITH_MSLANMAN
+#ifdef MSLANMAN
 			lm_response = &response[MS_CHAP_LANMANRESP];
 			lm_response_size = MS_CHAP_LANMANRESP_LEN;
 #else
 			/* Should really propagate this into the error packet. */
 			notice("Peer request for LANMAN auth not supported");
 			return NOT_AUTHENTICATED;
-#endif /* PPP_WITH_MSLANMAN */
+#endif /* MSLANMAN */
 		}
 		
 		/* ship off to winbind, and check */
@@ -585,9 +583,7 @@ winbind_chap_verify(char *user, char *ourname, int id,
 				  nt_response, nt_response_size,
 				  session_key,
 				  &error_string) == AUTHENTICATED) {
-#ifdef PPP_WITH_MPPE
-			mppe_set_chapv1(challenge, session_key);
-#endif
+			mppe_set_keys(challenge, session_key);
 			slprintf(message, message_space, "Access granted");
 			return AUTHENTICATED;
 			
@@ -606,7 +602,7 @@ winbind_chap_verify(char *user, char *ourname, int id,
 	case CHAP_MICROSOFT_V2:
 	{
 		u_char Challenge[8];
-		u_char session_key[MD4_DIGEST_LENGTH];
+		u_char session_key[MD4_SIGNATURE_SIZE];
 		char *error_string = NULL;
 		
 		if (response_len != MS_CHAP2_RESPONSE_LEN)
@@ -632,10 +628,8 @@ winbind_chap_verify(char *user, char *ourname, int id,
 				&response[MS_CHAP2_NTRESP],
 				&response[MS_CHAP2_PEER_CHALLENGE],
 				challenge, user, saresponse);
-#ifdef PPP_WITH_MPPE
-			mppe_set_chapv2(session_key, &response[MS_CHAP2_NTRESP],
+			mppe_set_keys2(session_key, &response[MS_CHAP2_NTRESP],
 				       MS_CHAP2_AUTHENTICATOR);
-#endif
 			if (response[MS_CHAP2_FLAGS]) {
 				slprintf(message, message_space, "S=%s", saresponse);
 			} else {
@@ -666,7 +660,7 @@ winbind_chap_verify(char *user, char *ourname, int id,
 }
 
 static int 
-winbind_allowed_address(uint32_t addr)
+winbind_allowed_address(u_int32_t addr) 
 {
 	ipcp_options *wo = &ipcp_wantoptions[0];
 	if (wo->hisaddr !=0 && wo->hisaddr == addr) {

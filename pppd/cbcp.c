@@ -32,20 +32,16 @@
  * AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 
 #include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/time.h>
 
-#include "pppd-private.h"
+#include "pppd.h"
 #include "cbcp.h"
 #include "fsm.h"
 #include "lcp.h"
-#include "options.h"
 
 
 /*
@@ -53,7 +49,7 @@
  */
 static int setcbcp (char **);
 
-static struct option cbcp_option_list[] = {
+static option_t cbcp_option_list[] = {
     { "callback", o_special, (void *)setcbcp,
       "Ask for callback", OPT_PRIO | OPT_A2STRVAL, &cbcp[0].us_number },
     { NULL }
@@ -462,6 +458,6 @@ static void
 cbcp_up(cbcp_state *us)
 {
     persist = 0;
-    ppp_set_status(EXIT_CALLBACK);
+    status = EXIT_CALLBACK;
     lcp_close(0, "Call me back, please");
 }

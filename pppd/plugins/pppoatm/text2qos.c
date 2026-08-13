@@ -66,9 +66,8 @@ int __t2q_get_rate(const char **text,int up)
     }
     else if (!strncmp(end,"cps",3)) end += 3;
 	else if (!strncmp(end,"bps",3)) {
-		if (up && rate % (8 * ATM_CELL_PAYLOAD) == 0)
-			up = 0;
-		rate = rate / (8 * ATM_CELL_PAYLOAD) + !!up;
+		rate = (rate+(up ? 8*ATM_CELL_PAYLOAD-1 : 0))/8/
+		  ATM_CELL_PAYLOAD;
 		end += 3;
 	    }
 	    else if (multiplier) return RATE_ERROR;

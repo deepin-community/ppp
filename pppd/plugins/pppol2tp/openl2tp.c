@@ -23,29 +23,21 @@
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
-
+#include "pppd.h"
+#include "pathnames.h"
+#include "fsm.h"
+#include "lcp.h"
+#include "ccp.h"
+#include "ipcp.h"
 #include <sys/stat.h>
 #include <net/if.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <sys/un.h>
-#include <sys/time.h>
 #include <netinet/in.h>
 #include <signal.h>
 #include <linux/version.h>
 #include <linux/sockios.h>
-#include <stdarg.h>
-#include <stdbool.h>
-#include <stdio.h>
-
-#include <pppd/pppd.h>
-#include <pppd/options.h>
-#include <pppd/fsm.h>
-#include <pppd/lcp.h>
-#include <pppd/ccp.h>
-#include <pppd/ipcp.h>
-#include <pppd/multilink.h>
-
 
 #ifndef aligned_u64
 /* should be defined in sys/types.h */
@@ -54,6 +46,7 @@
 #include <linux/types.h>
 #include <linux/if_ether.h>
 #include <linux/ppp_defs.h>
+#include <linux/if_ppp.h>
 #include <linux/if_pppox.h>
 #include <linux/if_pppol2tp.h>
 
@@ -66,7 +59,7 @@ extern void (*pppol2tp_send_accm_hook)(int tunnel_id, int session_id,
 				       uint32_t send_accm, uint32_t recv_accm);
 extern void (*pppol2tp_ip_updown_hook)(int tunnel_id, int session_id, int up);
 
-const char pppd_version[] = PPPD_VERSION;
+const char pppd_version[] = VERSION;
 
 static int openl2tp_fd = -1;
 
@@ -75,9 +68,7 @@ static void (*old_pppol2tp_send_accm_hook)(int tunnel_id, int session_id,
 					   uint32_t recv_accm) = NULL;
 static void (*old_pppol2tp_ip_updown_hook)(int tunnel_id, int session_id,
 					   int up) = NULL;
-#ifdef PPP_WITH_MULTILINK
-static multilink_join_hook_fn *old_multilink_join_hook = NULL;
-#endif
+static void (*old_multilink_join_hook)(void) = NULL;
 
 /*****************************************************************************
  * OpenL2TP interface.
@@ -183,12 +174,8 @@ static void openl2tp_ppp_updown_ind(int tunnel_id, int session_id, int up)
 	uint16_t tid = tunnel_id;
 	uint16_t sid = session_id;
 	uint8_t state = up;
-	int unit = 0;
-	char ifname[MAXNAMELEN];
-	char user_name[MAXNAMELEN];
-
-	unit = ppp_ifunit();
-	ppp_get_ifname(ifname, sizeof(ifname));
+	int unit = ifunit;
+	char *user_name = NULL;
 
 	if (openl2tp_fd < 0) {
 		result = openl2tp_client_create();
@@ -197,8 +184,9 @@ static void openl2tp_ppp_updown_ind(int tunnel_id, int session_id, int up)
 		}
 	}
 
-	if (!ppp_peer_authname(user_name, sizeof(user_name)))
-		user_name[0] = '\0';
+	if (peer_authname[0] != '\0') {
+		user_name = strdup(peer_authname);
+	}
 
 	msg->msg_signature = OPENL2TP_MSG_SIGNATURE;
 	msg->msg_type = OPENL2TP_MSG_TYPE_PPP_UPDOWN_IND;
@@ -234,7 +222,7 @@ static void openl2tp_ppp_updown_ind(int tunnel_id, int session_id, int up)
 	memcpy(&tlv->tlv_value[0], ifname, tlv->tlv_len);
 	msg->msg_len += sizeof(*tlv) + ALIGN32(tlv->tlv_len);
 
-	if (user_name[0] != '\0') {
+	if (user_name != NULL) {
 		tlv = (void *) &msg->msg_data[msg->msg_len];
 		tlv->tlv_type = OPENL2TP_TLV_TYPE_PPP_USER_NAME;
 		tlv->tlv_len = strlen(user_name) + 1;
@@ -258,6 +246,9 @@ out:
 		(*old_pppol2tp_ip_updown_hook)(tunnel_id, session_id, up);
 	}
 
+	if (user_name != NULL)
+		free(user_name);
+
 	return;
 }
 
@@ -279,16 +270,14 @@ out:
  * multilink bundle.
  *****************************************************************************/
 
-#ifdef PPP_WITH_MULTILINK
 static void openl2tp_multilink_join_ind(void)
 {
-	if (mp_on() && !mp_master()) {
+	if (doing_multilink && !multilink_master) {
 		/* send event only if not master */
 		openl2tp_ppp_updown_ind(pppol2tp_tunnel_id,
 					pppol2tp_session_id, 1);
 	}
 }
-#endif
 
 /*****************************************************************************
  * Application init
@@ -302,9 +291,7 @@ void plugin_init(void)
 	old_pppol2tp_ip_updown_hook = pppol2tp_ip_updown_hook;
 	pppol2tp_ip_updown_hook = openl2tp_ppp_updown_ind;
 
-#ifdef PPP_WITH_MULTILINK
 	old_multilink_join_hook = multilink_join_hook;
 	multilink_join_hook = openl2tp_multilink_join_ind;
-#endif
 }
 

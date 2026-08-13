@@ -1,4 +1,6 @@
 /*
+ * $Id: dict.c,v 1.1 2004/11/14 07:26:26 paulus Exp $
+ *
  * Copyright (C) 2002 Roaring Penguin Software Inc.
  *
  * Copyright (C) 1995,1996,1997 Lars Fenneberg
@@ -148,7 +150,7 @@ int rc_read_dictionary (char *filename)
 			{
 				type = PW_TYPE_INTEGER;
 			}
-			else if (strcmp (typestr, "ipaddr") == 0 || strcmp (typestr, "ipv4addr") == 0)
+			else if (strcmp (typestr, "ipaddr") == 0)
 			{
 				type = PW_TYPE_IPADDR;
 			}
